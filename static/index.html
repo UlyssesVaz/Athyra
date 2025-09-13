@@ -256,32 +256,48 @@
         // Process voice command
         async function processVoiceCommand() {
             try {
-                // For MVP, we'll use text input instead of actual audio
-                // In production, you'd send the audioBlob to speech-to-text
-                const voiceText = prompt('Voice Command (for MVP testing):', 'log this food');
-                if (!voiceText) return;
-                
-                // Call voice command endpoint
+                // Step 1: Combine the recorded audio chunks into a single audio file (Blob)
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+
+                // Step 2: Create a FormData object to send the file
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'voice_command.webm');
+
+                // Step 3: Send the audio file to the new backend endpoint
                 const response = await fetch(`${API_BASE}/voice_command`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: voiceText })
+                    body: formData  // Send the FormData object
+                    // VERY IMPORTANT: DO NOT set a 'Content-Type' header here.
+                    // The browser will automatically set the correct 'multipart/form-data' header.
                 });
-                
+
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+
                 const voiceResult = await response.json();
-                status.textContent = `🎯 Command: "${voiceText}" → ${voiceResult.action}`;
+                
+                // This part remains mostly the same, it just acts on the classified action
+                status.textContent = `🎤 You said: "${voiceResult.transcribed_text || '...'}" → 🎯 Action: ${voiceResult.action}`;
                 
                 // Execute the action
                 if (voiceResult.action === 'log_food' || voiceResult.action === 'analyze_food') {
                     await handleFoodAction(voiceResult);
                 } else if (voiceResult.action === 'start_exercise') {
                     await handleExercise();
+                } else if (voiceResult.action === 'get_summary') {
+                    // New action handler!
+                    summaryBtn.click(); // Programmatically click the summary button
                 } else {
                     status.textContent = `❓ ${voiceResult.message}`;
                 }
                 
             } catch (err) {
                 status.textContent = '❌ Voice processing failed: ' + err.message;
+                console.error("Voice processing error:", err);
+            } finally {
+                // Reset audio chunks for the next recording
+                audioChunks = [];
             }
         }
         

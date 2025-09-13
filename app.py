@@ -1,10 +1,11 @@
 # app.py - True MVP: Voice Router + Simple Endpoints
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, UploadFile, File
 import sqlite3
-import openai
+from openai import OpenAI
 import base64
 from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
+import json
 
 from dotenv import load_dotenv
 import os
@@ -15,7 +16,7 @@ import re
 
 app = FastAPI()
 load_dotenv()
-openai.api_key = os.getenv("OPENAI")
+client = OpenAI(api_key=os.getenv("OPENAI"))
 
 #CORS
 # Add CORS middleware - CRITICAL for frontend to work
@@ -48,25 +49,75 @@ init_db()
 class VoiceCommandRequest(BaseModel):
     text: str
 
-
 # =============================================================================
-# VOICE COMMAND ROUTER - The only "smart" endpoint
+# VOICE COMMAND ROUTER v2 - NLP Intent Recognition
 # =============================================================================
 
-@app.post("/voice_command") 
-async def voice_command(request: VoiceCommandRequest): # <--- CHANGE IS HERE
-    """Voice command classifier - tells frontend what to do next"""
-    
-    command = request.text.lower().strip() # <--- CHANGE IS HERE
-    
-    if "log this food" in command:
-        return {"action": "log_food", "save_to_db": True}
-    elif "analyze this food" in command or "what is this" in command:
-        return {"action": "analyze_food", "save_to_db": False}  
-    elif "start exercise" in command:
-        return {"action": "start_exercise"}
-    else:
-        return {"action": "unknown", "message": "Try: 'log this food' or 'analyze this food'"}
+@app.post("/voice_command")
+async def voice_command(audio: UploadFile = File(...)):
+    """
+    Accepts audio, transcribes it, and uses an LLM to determine user intent.
+    This is the new "brain" of your app.
+    """
+    try:
+        # Step 1: Transcribe audio to text with Whisper
+        # We save the audio to a temporary file because the transcription API needs a file path.
+        temp_audio_path = "temp_audio.webm"
+        with open(temp_audio_path, "wb") as buffer:
+            buffer.write(await audio.read())
+        
+        with open(temp_audio_path, "rb") as audio_file:
+            transcription = client.audio.transcriptions.create(
+              model="whisper-1", 
+              file=audio_file
+            )
+        
+        user_text = transcription.text
+        print(f"DEBUG: Transcribed text = '{user_text}'")
+
+        # Step 2: Classify the intent of the text using GPT-4o
+        system_prompt = """
+            You are an intent recognition router for a voice-controlled fitness app.
+            Your task is to analyze the user's text and determine their intent.
+            Your response MUST be a JSON object with a single key: "action".
+            The possible values for "action" are: "log_food", "analyze_food", "start_exercise", "get_summary", or "unknown".
+
+            Examples:
+            - User: "Please log this meal for me." -> {"action": "log_food"}
+            - User: "What is this food?" -> {"action": "analyze_food"}
+            - User: "how many calories have i had" -> {"action": "get_summary"}
+            - User: "i'm going for a run" -> {"action": "start_exercise"}
+            - User: "what's the weather like" -> {"action": "unknown"}
+        """
+
+        response = client.chat.completions.create(
+            model="o4-mini",
+            response_format={ "type": "json_object" }, # Use JSON mode for reliable output
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_text}
+            ]
+        )
+
+        intent_data = json.loads(response.choices[0].message.content)
+        action = intent_data.get("action", "unknown")
+        print(f"DEBUG: Classified action = '{action}'")
+
+        # Step 3: Return the action and necessary parameters to the frontend
+        if action == "log_food":
+            return {"action": "log_food", "save_to_db": True}
+        elif action == "analyze_food":
+            return {"action": "analyze_food", "save_to_db": False}
+        elif action == "start_exercise":
+            return {"action": "start_exercise"}
+        elif action == "get_summary":
+            return {"action": "get_summary"} # We'll need a frontend handler for this
+        else:
+            return {"action": "unknown", "message": f"I'm not sure how to handle '{user_text}'"}
+
+    except Exception as e:
+        print(f"ERROR in voice_command: {e}")
+        return {"action": "unknown", "message": "An error occurred while processing your voice."}
 
 # =============================================================================
 # Simple endpoints - minimal logic
@@ -78,7 +129,7 @@ async def analyze_food(image: UploadFile, save_to_db: bool = False):
     
     # AI call
     image_data = base64.b64encode(await image.read()).decode()
-    response = openai.chat.completions.create(
+    response = client.chat.completions.create(
         model="gpt-4o",
         messages=[{
             "role": "user",
