@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Tracker MVP</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .camera-container {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        #video {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 15px;
+            margin: 0 auto 20px;
+            background: #000;
+        }
+        
+        #canvas {
+            display: none;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        button {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+        
+        button:hover, button:active {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .voice-btn {
+            background: rgba(255,0,0,0.3) !important;
+            border-color: rgba(255,0,0,0.5) !important;
+            font-size: 18px;
+            padding: 20px;
+            border-radius: 50px;
+        }
+        
+        .voice-btn.listening {
+            background: rgba(255,0,0,0.8) !important;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .status {
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            min-height: 80px;
+            font-size: 14px;
+        }
+        
+        .summary {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏃‍♂️ Fitness Tracker</h1>
+            <p>MVP - Voice + Camera</p>
+        </div>
+        
+        <div class="camera-container">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+            <p id="camera-status">📸 Camera loading...</p>
+        </div>
+        
+        <div class="controls">
+            <button id="voice-btn" class="voice-btn">🎤 Hold to Talk</button>
+            <button id="photo-btn" disabled>📷 Take Photo</button>
+        </div>
+        
+        <div class="controls">
+            <button id="summary-btn">📊 Daily Summary</button>
+        </div>
+        
+        <div id="status" class="status">
+            👋 Ready! Hold the mic button and say "log this food" or "analyze this food"
+        </div>
+        
+        <div id="summary" class="summary hidden">
+            <h3>Today's Summary</h3>
+            <p id="summary-text">Loading...</p>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+        let stream;
+        
+        // DOM elements
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const voiceBtn = document.getElementById('voice-btn');
+        const photoBtn = document.getElementById('photo-btn');
+        const summaryBtn = document.getElementById('summary-btn');
+        const status = document.getElementById('status');
+        const cameraStatus = document.getElementById('camera-status');
+        const summaryDiv = document.getElementById('summary');
+        const summaryText = document.getElementById('summary-text');
+        
+        // Your backend URL - CHANGE THIS to your actual backend
+        const API_BASE = 'http://127.0.0.1:8000';
+        
+        // Initialize camera
+        async function initCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',  // Use back camera on mobile
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: true 
+                });
+                video.srcObject = stream;
+                cameraStatus.textContent = '📸 Camera ready';
+                photoBtn.disabled = false;
+            } catch (err) {
+                cameraStatus.textContent = '❌ Camera access denied';
+                console.error('Camera error:', err);
+            }
+        }
+        
+        // Take photo
+        function takePhoto() {
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0);
+            
+            return new Promise((resolve) => {
+                canvas.toBlob(resolve, 'image/jpeg', 0.8);
+            });
+        }
+        
+        // Voice recording
+        voiceBtn.addEventListener('mousedown', startRecording);
+        voiceBtn.addEventListener('mouseup', stopRecording);
+        voiceBtn.addEventListener('touchstart', startRecording);
+        voiceBtn.addEventListener('touchend', stopRecording);
+        
+        async function startRecording() {
+            if (isRecording) return;
+            
+            try {
+                audioChunks = [];
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+                
+                mediaRecorder.onstop = processVoiceCommand;
+                
+                mediaRecorder.start();
+                isRecording = true;
+                voiceBtn.classList.add('listening');
+                voiceBtn.textContent = '🔴 Listening...';
+                status.textContent = '🎤 Listening for voice command...';
+                
+            } catch (err) {
+                status.textContent = '❌ Microphone error: ' + err.message;
+            }
+        }
+        
+        function stopRecording() {
+            if (!isRecording) return;
+            
+            mediaRecorder.stop();
+            isRecording = false;
+            voiceBtn.classList.remove('listening');
+            voiceBtn.textContent = '🎤 Hold to Talk';
+            status.textContent = '⏳ Processing voice command...';
+        }
+        
+        // Process voice command
+        async function processVoiceCommand() {
+            try {
+                // For MVP, we'll use text input instead of actual audio
+                // In production, you'd send the audioBlob to speech-to-text
+                const voiceText = prompt('Voice Command (for MVP testing):', 'log this food');
+                if (!voiceText) return;
+                
+                // Call voice command endpoint
+                const response = await fetch(`${API_BASE}/voice_command`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: voiceText })
+                });
+                
+                const voiceResult = await response.json();
+                status.textContent = `🎯 Command: "${voiceText}" → ${voiceResult.action}`;
+                
+                // Execute the action
+                if (voiceResult.action === 'log_food' || voiceResult.action === 'analyze_food') {
+                    await handleFoodAction(voiceResult);
+                } else if (voiceResult.action === 'start_exercise') {
+                    await handleExercise();
+                } else {
+                    status.textContent = `❓ ${voiceResult.message}`;
+                }
+                
+            } catch (err) {
+                status.textContent = '❌ Voice processing failed: ' + err.message;
+            }
+        }
+        
+        // Handle food actions
+        async function handleFoodAction(voiceResult) {
+            try {
+                status.textContent = '📸 Taking photo...';
+                const photoBlob = await takePhoto();
+                
+                status.textContent = '🤖 Analyzing food...';
+                
+                const formData = new FormData();
+                formData.append('image', photoBlob, 'food.jpg');
+                formData.append('save_to_db', voiceResult.save_to_db);
+                
+                const response = await fetch(`${API_BASE}/analyze_food`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.saved) {
+                    status.textContent = `✅ Logged: ${result.description} (${result.calories} cal)`;
+                } else {
+                    status.textContent = `📊 Analysis: ${result.description} (${result.calories} cal)`;
+                }
+                
+            } catch (err) {
+                status.textContent = '❌ Food analysis failed: ' + err.message;
+            }
+        }
+        
+        // Handle exercise
+        async function handleExercise() {
+            try {
+                const response = await fetch(`${API_BASE}/exercise`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                status.textContent = `🏃‍♂️ ${result.message}`;
+            } catch (err) {
+                status.textContent = '❌ Exercise failed: ' + err.message;
+            }
+        }
+        
+        // Manual photo button
+        photoBtn.addEventListener('click', async () => {
+            const photoBlob = await takePhoto();
+            const formData = new FormData();
+            formData.append('image', photoBlob, 'food.jpg');
+            formData.append('save_to_db', true);
+            
+            try {
+                status.textContent = '🤖 Analyzing photo...';
+                const response = await fetch(`${API_BASE}/analyze_food`, {
+                    method: 'POST', 
+                    body: formData
+                });
+                const result = await response.json();
+                status.textContent = `📸 Manual photo: ${result.description} (${result.calories} cal)`;
+            } catch (err) {
+                status.textContent = '❌ Photo analysis failed: ' + err.message;
+            }
+        });
+        
+        // Daily summary
+        summaryBtn.addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/summary`);
+                const result = await response.json();
+                summaryText.textContent = `Total calories today: ${result.calories_today}`;
+                summaryDiv.classList.remove('hidden');
+            } catch (err) {
+                summaryText.textContent = 'Failed to load summary: ' + err.message;
+                summaryDiv.classList.remove('hidden');
+            }
+        });
+        
+        // Initialize everything
+        initCamera();
+        
+        // Basic motion detection (placeholder for future GPS/motion features)
+        if ('DeviceMotionEvent' in window) {
+            window.addEventListener('devicemotion', (event) => {
+                // Future: Detect walking, running, etc.
+                // For now, just log that motion is available
+                console.log('Motion detected:', event.acceleration);
+            });
+        }
+    </script>
+</body>
+</html>
