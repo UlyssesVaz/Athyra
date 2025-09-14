@@ -297,63 +297,12 @@
             }
         });
 
-        exerciseBtn.addEventListener('click', async () => {
+        
+        exerciseBtn.addEventListener('click', () => {
             if (!isExercising) {
-                // --- START the run ---
-                try {
-                    const response = await fetch(`${API_BASE}/exercise`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Username': currentUser
-                        },
-                        body: JSON.stringify({ action: 'start' })
-                    });
-
-                    if (!response.ok) throw new Error('Failed to start exercise.');
-
-                    const result = await response.json();
-                    exerciseSessionId = result.session_id;
-                    isExercising = true;
-
-                    // Update UI
-                    exerciseBtn.textContent = 'Stop Run';
-                    exerciseBtn.style.background = 'rgba(255, 100, 100, 0.5)';
-                    startTimer();
-                    status.textContent = '🏃‍♂️ Run started! Keep this window open.';
-
-                } catch (err) {
-                    status.textContent = '❌ Error starting run: ' + err.message;
-                }
-
+                startRun();
             } else {
-                // --- STOP the run ---
-                try {
-                    const response = await fetch(`${API_BASE}/exercise`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Username': currentUser
-                        },
-                        body: JSON.stringify({ action: 'stop', session_id: exerciseSessionId })
-                    });
-
-                    if (!response.ok) throw new Error('Failed to stop exercise.');
-                    
-                    const result = await response.json();
-                    isExercising = false;
-                    exerciseSessionId = null;
-                    stopTimer();
-
-                    // Update UI
-                    exerciseBtn.textContent = 'Start Run';
-                    exerciseBtn.style.background = ''; // Reset style
-                    const minutes = Math.floor(result.duration_seconds / 60);
-                    status.textContent = `✅ Run complete! You ran for ${minutes} minutes and burned ~${result.calories_burned} calories.`;
-                
-                } catch (err) {
-                    status.textContent = '❌ Error stopping run: ' + err.message;
-                }
+                stopRun();
             }
         });
 
@@ -509,7 +458,8 @@
                     case 'log_food': await logFoodDirect(); break;
                     case 'analyze_food': await analyzeFood(); break;
                     case 'log_previous': await logPreviousItem(); break;
-                    case 'start_exercise': await handleExercise(); break;
+                    case 'start_exercise': await startRun(); break;
+                     case 'stop_exercise': await stopRun(); break;
                     case 'get_summary': summaryBtn.click(); break;
                     default: status.textContent = `❓ ${voiceResult.message || "I didn't understand that."}`;
                 }
@@ -608,6 +558,70 @@
                 status.textContent = `🏃‍♂️ ${result.message}`;
             } catch (err) {
                 status.textContent = '❌ Exercise failed: ' + err.message;
+            }
+        }
+
+        async function startRun() {
+            if (isExercising) {
+                status.textContent = 'A run is already in progress.';
+                return;
+            }
+            try {
+                const response = await fetch(`${API_BASE}/exercise`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Username': currentUser
+                    },
+                    body: JSON.stringify({ action: 'start', exercise_type: 'running' })
+                });
+                if (!response.ok) throw new Error('Failed to start exercise.');
+
+                const result = await response.json();
+                exerciseSessionId = result.session_id;
+                isExercising = true;
+
+                // Update UI
+                exerciseBtn.textContent = 'Stop Run';
+                exerciseBtn.style.background = 'rgba(255, 100, 100, 0.5)';
+                startTimer();
+                status.textContent = '🏃‍♂️ Run started! Keep this window open.';
+
+            } catch (err) {
+                status.textContent = '❌ Error starting run: ' + err.message;
+            }
+        }
+
+        // 2. NEW Reusable function to STOP the run
+        async function stopRun() {
+            if (!isExercising) {
+                status.textContent = 'No run is in progress to stop.';
+                return;
+            }
+            try {
+                const response = await fetch(`${API_BASE}/exercise`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Username': currentUser
+                    },
+                    body: JSON.stringify({ action: 'stop', session_id: exerciseSessionId })
+                });
+                if (!response.ok) throw new Error('Failed to stop exercise.');
+                
+                const result = await response.json();
+                isExercising = false;
+                exerciseSessionId = null;
+                stopTimer();
+
+                // Update UI
+                exerciseBtn.textContent = 'Start Run';
+                exerciseBtn.style.background = ''; // Reset style
+                const minutes = Math.floor(result.duration_seconds / 60);
+                status.textContent = `✅ Run complete! You ran for ${minutes} minutes and burned ~${result.calories_burned} calories.`;
+            
+            } catch (err) {
+                status.textContent = '❌ Error stopping run: ' + err.message;
             }
         }
         

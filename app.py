@@ -98,6 +98,7 @@ class LoginRequest(BaseModel):
 class ExerciseRequest(BaseModel):
     action: Literal['start', 'stop']
     session_id: int | None = None # session_id is only needed for the 'stop' action
+    exercise_type: str = 'running' # Add this with a default value for now
 
 
 # =============================================================================
@@ -136,7 +137,9 @@ async def voice_command(audio: UploadFile = File(...)):
             - "log_previous": User wants to save the last analyzed item (requires prior analysis)
             Examples: "log it", "save it", "log that", "yes lets add that", "confirm", "add it to my log"
             - "start_exercise": Exercise related
-            Examples: "going for a run", "starting workout", "exercise time"
+            Examples: "going for a run", "starting workout", "exercise time", "start my run", "begin workout"
+             - "stop_exercise": User wants to end their current workout  
+            Examples: "stop my run", "end workout", "I'm done exercising" 
             - "get_summary": Summary requests
             Examples: "how am I doing", "daily summary", "my calories", "show my progress"
             - "clarify": Ambiguous commands that need clarification depending on context 
@@ -338,8 +341,8 @@ async def handle_exercise(req: ExerciseRequest, x_username: str = Header(...)):
         # Create a new exercise log entry
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO exercise_logs (user_id, start_time) VALUES (?, ?)",
-            (user['id'], datetime.now().isoformat())
+            "INSERT INTO exercise_logs (user_id, start_time, exercise_type) VALUES (?, ?, ?)",
+            (user['id'], datetime.now().isoformat(), req.exercise_type)
         )
         conn.commit()
         new_session_id = cursor.lastrowid
