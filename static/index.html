@@ -158,6 +158,8 @@
             <h3>Today's Summary</h3>
             <p id="summary-text">Loading...</p>
         </div>
+
+        
     </div>
 
     <script>
@@ -166,6 +168,7 @@
         let audioChunks = [];
         let isRecording = false;
         let stream;
+        let lastAnalysisResult = null; // Our new "memory" variable
         
         // DOM elements
         const video = document.getElementById('video');
@@ -256,19 +259,13 @@
         // Process voice command
         async function processVoiceCommand() {
             try {
-                // Step 1: Combine the recorded audio chunks into a single audio file (Blob)
                 const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-
-                // Step 2: Create a FormData object to send the file
                 const formData = new FormData();
                 formData.append('audio', audioBlob, 'voice_command.webm');
 
-                // Step 3: Send the audio file to the new backend endpoint
                 const response = await fetch(`${API_BASE}/voice_command`, {
                     method: 'POST',
-                    body: formData  // Send the FormData object
-                    // VERY IMPORTANT: DO NOT set a 'Content-Type' header here.
-                    // The browser will automatically set the correct 'multipart/form-data' header.
+                    body: formData
                 });
 
                 if (!response.ok) {
@@ -276,33 +273,64 @@
                 }
 
                 const voiceResult = await response.json();
-                
-                // This part remains mostly the same, it just acts on the classified action
                 status.textContent = `🎤 You said: "${voiceResult.transcribed_text || '...'}" → 🎯 Action: ${voiceResult.action}`;
                 
-                // Execute the action
-                if (voiceResult.action === 'log_food' || voiceResult.action === 'analyze_food') {
-                    await handleFoodAction(voiceResult);
-                } else if (voiceResult.action === 'start_exercise') {
-                    await handleExercise();
-                } else if (voiceResult.action === 'get_summary') {
-                    // New action handler!
-                    summaryBtn.click(); // Programmatically click the summary button
-                } else {
-                    status.textContent = `❓ ${voiceResult.message}`;
+                // Direct action routing - no more save_to_db logic
+                switch (voiceResult.action) {
+                    case 'log_food':
+                        await logFoodDirect();
+                        break;
+                    case 'analyze_food':
+                        await analyzeFood();
+                        break;
+                    case 'log_previous':
+                        await logPreviousItem();
+                        break;
+                    case 'start_exercise':
+                        await handleExercise();
+                        break;
+                    case 'get_summary':
+                        summaryBtn.click();
+                        break;
+                    default:
+                        status.textContent = `❓ ${voiceResult.message || "I didn't understand that."}`;
                 }
                 
             } catch (err) {
                 status.textContent = '❌ Voice processing failed: ' + err.message;
                 console.error("Voice processing error:", err);
             } finally {
-                // Reset audio chunks for the next recording
                 audioChunks = [];
             }
         }
         
-        // Handle food actions
-        async function handleFoodAction(voiceResult) {
+        // Log food directly after taking photo
+        async function logFoodDirect() {
+            try {
+                status.textContent = '📸 Taking photo...';
+                const photoBlob = await takePhoto();
+                
+                status.textContent = '🤖 Analyzing and saving...';
+                
+                const formData = new FormData();
+                formData.append('image', photoBlob, 'food.jpg');
+                
+                const response = await fetch(`${API_BASE}/log_food_direct`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                status.textContent = `✅ Logged: ${result.description} (${result.calories} cal)`;
+                lastAnalysisResult = null; // Clear memory since we saved directly
+                
+            } catch (err) {
+                status.textContent = '❌ Log food failed: ' + err.message;
+            }
+        }
+
+        // Analyze food without saving
+        async function analyzeFood() {
             try {
                 status.textContent = '📸 Taking photo...';
                 const photoBlob = await takePhoto();
@@ -311,7 +339,6 @@
                 
                 const formData = new FormData();
                 formData.append('image', photoBlob, 'food.jpg');
-                formData.append('save_to_db', voiceResult.save_to_db);
                 
                 const response = await fetch(`${API_BASE}/analyze_food`, {
                     method: 'POST',
@@ -319,15 +346,44 @@
                 });
                 
                 const result = await response.json();
-                
-                if (result.saved) {
-                    status.textContent = `✅ Logged: ${result.description} (${result.calories} cal)`;
-                } else {
-                    status.textContent = `📊 Analysis: ${result.description} (${result.calories} cal)`;
-                }
+                status.textContent = `📊 Analysis: ${result.description} (${result.calories} cal). Say "Log it" to save.`;
+                lastAnalysisResult = result; // Save to memory for later logging
                 
             } catch (err) {
                 status.textContent = '❌ Food analysis failed: ' + err.message;
+            }
+        }
+
+        // Log previous analyzed item
+        async function logPreviousItem() {
+            try {
+                if (!lastAnalysisResult) {
+                    status.textContent = '🤔 Nothing to save. Please analyze an item first.';
+                    return;
+                }
+                
+                status.textContent = '💾 Saving previous item...';
+                
+                const response = await fetch(`${API_BASE}/log_previous`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        type: lastAnalysisResult.description.split(' ')[0],
+                        description: lastAnalysisResult.description,
+                        calories: lastAnalysisResult.calories
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to log item');
+                }
+                
+                const result = await response.json();
+                status.textContent = `✅ Logged: ${lastAnalysisResult.description} (${lastAnalysisResult.calories} cal)`;
+                lastAnalysisResult = null; // Clear memory
+                
+            } catch (err) {
+                status.textContent = '⚠️ Failed to log previous item: ' + err.message;
             }
         }
         
@@ -346,24 +402,32 @@
         
         // Manual photo button
         photoBtn.addEventListener('click', async () => {
-            const photoBlob = await takePhoto();
-            const formData = new FormData();
-            formData.append('image', photoBlob, 'food.jpg');
-            formData.append('save_to_db', true);
-            
             try {
-                status.textContent = '🤖 Analyzing photo...';
-                const response = await fetch(`${API_BASE}/analyze_food`, {
+                status.textContent = '📸 Taking photo...';
+                const photoBlob = await takePhoto();
+
+                const formData = new FormData();
+                formData.append('image', photoBlob, 'food.jpg');
+                
+                status.textContent = '🤖 Analyzing and logging photo...';
+                // USE the /log_food_direct endpoint for a one-step save
+                const response = await fetch(`${API_BASE}/log_food_direct`, {
                     method: 'POST', 
                     body: formData
                 });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.statusText}`);
+                }
+
                 const result = await response.json();
-                status.textContent = `📸 Manual photo: ${result.description} (${result.calories} cal)`;
+                status.textContent = `✅ Logged: ${result.description} (${result.calories} cal)`;
+                lastAnalysisResult = null; // Clear memory in case something was analyzed before
+                
             } catch (err) {
-                status.textContent = '❌ Photo analysis failed: ' + err.message;
+                status.textContent = '❌ Photo logging failed: ' + err.message;
             }
-        });
-        
+        });        
         // Daily summary
         summaryBtn.addEventListener('click', async () => {
             try {
