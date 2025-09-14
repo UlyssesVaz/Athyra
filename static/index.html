@@ -142,7 +142,13 @@
                 <h3>Register</h3>
                 <input type="text" id="reg-username" placeholder="Username" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px; border:none;">
                 <input type="number" id="reg-age" placeholder="Age" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px; border:none;">
-                <input type="text" id="reg-sex" placeholder="Sex (male/female/other)" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px; border:none;">
+                <select id="reg-sex" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px; border:none;">
+                    <option value="">Select Sex Assigned at Birth</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
+                <input type="number" id="reg-height" placeholder="Height (cm)" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px; border:none;">
+                <input type="number" id="reg-weight" placeholder="Weight (kg)" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px; border:none;">
                 <select id="reg-goal" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px; border:none;">
                     <option value="lose_weight">Lose Weight</option>
                     <option value="gain_muscle">Gain Muscle</option>
@@ -242,12 +248,14 @@
         });
 
         registerBtn.addEventListener('click', async () => {
-            const username = document.getElementById('reg-username').value;
+            const username = document.getElementById('reg-username').value.toLowerCase().trim();
             const age = document.getElementById('reg-age').value;
             const sex = document.getElementById('reg-sex').value;
+            const height = document.getElementById('reg-height').value; // Get height
+            const weight = document.getElementById('reg-weight').value; // Get weight
             const goal = document.getElementById('reg-goal').value;
 
-            if (!username || !age || !sex || !goal) {
+            if (!username || !age || !sex || !height || !weight || !goal){
                 alert('Please fill out all fields.');
                 return;
             }
@@ -256,7 +264,14 @@
                 const response = await fetch(`${API_BASE}/register`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ username, age: parseInt(age), sex, goal })
+                    body: JSON.stringify({ 
+                        username, 
+                        age: parseInt(age), 
+                        sex, 
+                        height_cm: parseInt(height), 
+                        weight_kg: parseInt(weight),
+                        goal 
+                    })
                 });
 
                 if (response.ok) {
@@ -272,7 +287,7 @@
         });
 
         loginBtn.addEventListener('click', async () => {
-            const username = document.getElementById('login-username').value;
+            const username = document.getElementById('login-username').value.toLowerCase().trim();
             if (!username) {
                 alert('Please enter a username.');
                 return;
@@ -308,7 +323,7 @@
         });
 
         function startApp(username) {
-            currentUser = username;
+            currentUser = username.toLowerCase();
             localStorage.setItem('fitness-app-user', username);
             
             welcomeUser.textContent = `Welcome, ${username}!`;
@@ -510,14 +525,36 @@
         
         // Daily summary button click
         summaryBtn.addEventListener('click', async () => {
+            // Ensure a user is logged in before making the call
             if (!currentUser) return;
+
             try {
+                // --- THIS IS THE FIX ---
+                // Add the headers object to send the current user's username
                 const response = await fetch(`${API_BASE}/summary`, {
-                    headers: { 'X-Username': currentUser }
+                    headers: { 
+                        'X-Username': currentUser 
+                    }
                 });
+
+                // Check if the response was successful before trying to parse it
+                if (!response.ok) {
+                    throw new Error(`Server returned status: ${response.status}`);
+                }
+
                 const result = await response.json();
-                summaryText.textContent = `Total calories today: ${result.calories_today}`;
+                
+                // Create a more detailed summary message
+                let summaryMessage = `Consumed: ${result.consumed_today} / ${result.target_calories} cal\n`;
+                if (result.remaining_calories >= 0) {
+                    summaryMessage += `You have ${result.remaining_calories} calories left today.`;
+                } else {
+                    summaryMessage += `You are ${Math.abs(result.remaining_calories)} calories over your target.`;
+                }
+                
+                summaryText.innerText = summaryMessage; // Use innerText to respect newlines
                 summaryDiv.classList.remove('hidden');
+
             } catch (err) {
                 summaryText.textContent = 'Failed to load summary: ' + err.message;
                 summaryDiv.classList.remove('hidden');

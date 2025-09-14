@@ -41,6 +41,8 @@ def init_db():
             username TEXT UNIQUE NOT NULL,
             age INTEGER,
             sex TEXT,
+            height_cm INTEGER, 
+            weight_kg INTEGER,
             goal TEXT -- 'lose_weight', 'gain_muscle', or 'maintain'
         )
     """)
@@ -71,6 +73,8 @@ class User(BaseModel):
     username: str
     age: int
     sex: str
+    height_cm: int
+    weight_kg: int 
     goal: str
 
 class LoginRequest(BaseModel):
@@ -308,30 +312,40 @@ async def start_exercise(x_username: str = Header(...)):
 
 @app.get("/summary")
 async def daily_summary(x_username: str = Header(...)):
-    """Simple daily summary for a specific user."""
+    """Provides a personalized daily summary based on user goals."""
     conn = sqlite3.connect("fitness.db")
-    cursor = conn.cursor()
-    
-    # --- ADDED: Get user_id from username ---
-    cursor.execute("SELECT id FROM users WHERE username = ?", (x_username,))
-    user_record = cursor.fetchone()
-    if not user_record:
+    try:
+        user = get_user_by_username(x_username, conn)
+        
+        # Calculate user's target calories using our new helper
+        target = calculate_target_calories(
+            sex=user["sex"], age=user["age"], 
+            height_cm=user["height_cm"], weight_kg=user["weight_kg"], 
+            goal=user["goal"]
+        )
+        
+        # Get calories consumed today (same logic as before)
+        today = datetime.now().date().isoformat()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT SUM(calories) FROM user_logs WHERE user_id = ? AND DATE(timestamp) = ?", 
+            (user["id"], today)
+        )
+        consumed = cursor.fetchone()[0] or 0
+        
+        # Calculate remaining calories
+        remaining = target - consumed
+        
+    finally:
         conn.close()
-        raise HTTPException(status_code=404, detail="User not found.")
-    user_id = user_record[0]
-    # --- END ADDITION ---
-    
-    today = datetime.now().date().isoformat()
-    
-    # --- MODIFIED: Query now filters by user_id ---
-    cursor.execute(
-        "SELECT SUM(calories) FROM user_logs WHERE user_id = ? AND DATE(timestamp) = ?", 
-        (user_id, today)
-    )
-    total_calories = cursor.fetchone()[0] or 0
-    
-    conn.close()
-    return {"username": x_username, "calories_today": total_calories}
+        
+    return {
+        "username": x_username,
+        "consumed_today": consumed,
+        "target_calories": target,
+        "remaining_calories": remaining,
+        "goal": user["goal"]
+    }
 
 
 # =============================================================================
@@ -344,29 +358,69 @@ async def register_user(user: User):
     conn = sqlite3.connect("fitness.db")
     cursor = conn.cursor()
     try:
+        username = user.username.lower().strip()  # Convert to lowercase and trim spaces
         cursor.execute(
-            "INSERT INTO users (username, age, sex, goal) VALUES (?, ?, ?, ?)",
-            (user.username, user.age, user.sex, user.goal)
+            "INSERT INTO users (username, age, sex, height_cm, weight_kg, goal) VALUES (?, ?, ?, ?, ?, ?)",
+            (username, user.age, user.sex, user.height_cm, user.weight_kg, user.goal)
         )
         conn.commit()
     except sqlite3.IntegrityError:
         raise HTTPException(status_code=400, detail="Username already exists.")
     finally:
         conn.close()
-    return {"status": "User registered successfully", "username": user.username}
+    return {"status": "User registered successfully", "username": username}
 
 @app.post("/login")
 async def login_user(req: LoginRequest):
     """Logs in a user by checking if they exist."""
     conn = sqlite3.connect("fitness.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT id FROM users WHERE username = ?", (req.username,))
+    username = user.username.lower().strip() # Convert to lowercase
+    cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
     user = cursor.fetchone()
     conn.close()
     if user:
-        return {"status": "Login successful", "username": req.username}
+        return {"status": "Login successful", "username": username}
     else:
         raise HTTPException(status_code=404, detail="User not found.")
 
+def get_user_by_username(username: str, db: sqlite3.Connection):
+    """Fetches user record from the database by username."""
+    cursor = db.cursor()
+    username = username.lower().strip()
+    # Fetch all the fields we need now
+    cursor.execute("SELECT id, age, sex, height_cm, weight_kg, goal FROM users WHERE username = ?", (username,))
+    user_record = cursor.fetchone()
+    if not user_record:
+        raise HTTPException(status_code=404, detail="User not found.")
+    return {
+        "id": user_record[0], "age": user_record[1], "sex": user_record[2],
+        "height_cm": user_record[3], "weight_kg": user_record[4], "goal": user_record[5]
+    }
+
+def calculate_target_calories(sex: str, age: int, height_cm: int, weight_kg: int, goal: str) -> int:
+    """
+    Calculates the target daily calories based on user data and goals.
+    Uses Mifflin-St Jeor for BMR and a standard activity multiplier.
+    """
+    # 1. Calculate BMR using Mifflin-St Jeor formula
+    if sex.lower() == 'male':
+        bmr = (10 * weight_kg) + (6.25 * height_cm) - (5 * age) + 5
+    else:  # Assume female or other, as the formula is slightly lower
+        bmr = (10 * weight_kg) + (6.25 * height_cm) - (5 * age) - 161
+    
+    # 2. Estimate TDEE (Total Daily Energy Expenditure)
+    # We'll use a simple 1.4 multiplier for light-to-moderate activity for this MVP
+    activity_multiplier = 1.4
+    tdee = bmr * activity_multiplier
+
+    # 3. Adjust TDEE based on the user's goal
+    target_calories = tdee
+    if goal == 'lose_weight':
+        target_calories -= 500  # Standard deficit for ~1 lb/week loss
+    elif goal == 'gain_muscle':
+        target_calories += 300  # Standard surplus for lean muscle gain
+
+    return int(target_calories)
 
 # Run with: uvicorn app:app --reload
