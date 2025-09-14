@@ -1,6 +1,6 @@
 # app.py - True MVP: Voice Router + Simple Endpoints
 from fastapi import FastAPI, UploadFile, File, Header, HTTPException
-from typing import Optional
+from typing import Optional, Literal
 import sqlite3
 from openai import OpenAI
 import base64
@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 import os
 
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import re
 
 app = FastAPI()
@@ -47,7 +47,7 @@ def init_db():
         )
     """)
 
-    # log user's food/exercise entries
+    # log user's food entries
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS user_logs (
             id INTEGER PRIMARY KEY,
@@ -59,6 +59,21 @@ def init_db():
             FOREIGN KEY (user_id) REFERENCES users (id)
         )
     """)
+
+    # Add a new table for exercise
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS exercise_logs (
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER,
+            exercise_type TEXT,
+            start_time TEXT,
+            end_time TEXT,
+            duration_seconds INTEGER,
+            calories_burned INTEGER,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -79,6 +94,11 @@ class User(BaseModel):
 
 class LoginRequest(BaseModel):
     username: str
+
+class ExerciseRequest(BaseModel):
+    action: Literal['start', 'stop']
+    session_id: int | None = None # session_id is only needed for the 'stop' action
+
 
 # =============================================================================
 # VOICE COMMAND ROUTER v2 - NLP Intent Recognition
@@ -160,7 +180,7 @@ async def voice_command(audio: UploadFile = File(...)):
         }
     
 # =============================================================================
-# Simple endpoints - minimal logic
+# Food
 # =============================================================================
 
 @app.post("/log_food_direct")
@@ -303,12 +323,74 @@ async def log_previous(data: dict, x_username: str = Header(...)):
     except Exception as e:
         return {"error": str(e)}    
 
+# =============================================================================
+# Exercise
+# =============================================================================
+
 @app.post("/exercise")
-async def start_exercise(x_username: str = Header(...)):
-    """Placeholder for exercise, acknowledges the logged-in user."""
-    # This endpoint can remain simple for now, but requiring the header
-    # makes it consistent with other protected endpoints.
-    return {"message": f"Exercise started for {x_username}!"}
+async def handle_exercise(req: ExerciseRequest, x_username: str = Header(...)):
+    """Starts or stops an exercise session for a user."""
+    conn = sqlite3.connect("fitness.db")
+    conn.row_factory = sqlite3.Row # Allows accessing columns by name
+    user = get_user_by_username(x_username, conn) # Reuse our helper
+
+    if req.action == 'start':
+        # Create a new exercise log entry
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO exercise_logs (user_id, start_time) VALUES (?, ?)",
+            (user['id'], datetime.now().isoformat())
+        )
+        conn.commit()
+        new_session_id = cursor.lastrowid
+        conn.close()
+        return {"status": "exercise_started", "session_id": new_session_id}
+
+    if req.action == 'stop':
+        if not req.session_id:
+            raise HTTPException(status_code=400, detail="session_id is required to stop an exercise.")
+        
+        # Get the start time from the DB
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT start_time FROM exercise_logs WHERE id = ? AND user_id = ?",
+            (req.session_id, user['id'])
+        )
+        session = cursor.fetchone()
+        if not session:
+            raise HTTPException(status_code=404, detail="Active exercise session not found.")
+        
+        start_time = datetime.fromisoformat(session['start_time'])
+        end_time = datetime.now()
+        duration = end_time - start_time
+        duration_seconds = int(duration.total_seconds())
+
+        # Estimate calories burned
+        # Formula: METs * user_weight_kg * duration_in_hours
+        # METs for running is ~9.8
+        met_value = 9.8
+        duration_hours = duration_seconds / 3600.0
+        calories_burned = int(met_value * user['weight_kg'] * duration_hours)
+
+        # Update the record
+        cursor.execute("""
+            UPDATE exercise_logs 
+            SET end_time = ?, duration_seconds = ?, calories_burned = ?
+            WHERE id = ?
+        """, (end_time.isoformat(), duration_seconds, calories_burned, req.session_id))
+        conn.commit()
+        conn.close()
+
+        return {
+            "status": "exercise_stopped",
+            "duration_seconds": duration_seconds,
+            "calories_burned": calories_burned
+        }
+    
+# =============================================================================
+# Stats
+# =============================================================================
+
 
 @app.get("/summary")
 async def daily_summary(x_username: str = Header(...)):

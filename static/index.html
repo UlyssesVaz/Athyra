@@ -195,6 +195,12 @@
                 <h3>Today's Summary</h3>
                 <p id="summary-text">Loading...</p>
             </div>
+
+            <div class="status" id="exercise-tracker">
+                <h3>Run Tracker</h3>
+                <p id="timer">00:00:00</p>
+                <button id="exercise-btn">Start Run</button>
+            </div>
         </div>
 
     </div>
@@ -207,6 +213,9 @@
         let stream;
         let lastAnalysisResult = null;
         let currentUser = null; // Holds the username of the logged-in user
+        let isExercising = false;
+        let exerciseSessionId = null;
+        let timerInterval = null;
 
         // --- DOM ELEMENTS ---
         const authSection = document.getElementById('auth-section');
@@ -221,7 +230,9 @@
         const summaryDiv = document.getElementById('summary');
         const summaryText = document.getElementById('summary-text');
         const welcomeUser = document.getElementById('welcome-user');
-        
+        const exerciseBtn = document.getElementById('exercise-btn');
+        const timerDisplay = document.getElementById('timer');
+
         // Auth form elements
         const registerForm = document.getElementById('register-form');
         const loginForm = document.getElementById('login-form');
@@ -285,6 +296,67 @@
                 alert('An error occurred during registration.');
             }
         });
+
+        exerciseBtn.addEventListener('click', async () => {
+            if (!isExercising) {
+                // --- START the run ---
+                try {
+                    const response = await fetch(`${API_BASE}/exercise`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Username': currentUser
+                        },
+                        body: JSON.stringify({ action: 'start' })
+                    });
+
+                    if (!response.ok) throw new Error('Failed to start exercise.');
+
+                    const result = await response.json();
+                    exerciseSessionId = result.session_id;
+                    isExercising = true;
+
+                    // Update UI
+                    exerciseBtn.textContent = 'Stop Run';
+                    exerciseBtn.style.background = 'rgba(255, 100, 100, 0.5)';
+                    startTimer();
+                    status.textContent = '🏃‍♂️ Run started! Keep this window open.';
+
+                } catch (err) {
+                    status.textContent = '❌ Error starting run: ' + err.message;
+                }
+
+            } else {
+                // --- STOP the run ---
+                try {
+                    const response = await fetch(`${API_BASE}/exercise`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Username': currentUser
+                        },
+                        body: JSON.stringify({ action: 'stop', session_id: exerciseSessionId })
+                    });
+
+                    if (!response.ok) throw new Error('Failed to stop exercise.');
+                    
+                    const result = await response.json();
+                    isExercising = false;
+                    exerciseSessionId = null;
+                    stopTimer();
+
+                    // Update UI
+                    exerciseBtn.textContent = 'Start Run';
+                    exerciseBtn.style.background = ''; // Reset style
+                    const minutes = Math.floor(result.duration_seconds / 60);
+                    status.textContent = `✅ Run complete! You ran for ${minutes} minutes and burned ~${result.calories_burned} calories.`;
+                
+                } catch (err) {
+                    status.textContent = '❌ Error stopping run: ' + err.message;
+                }
+            }
+        });
+
 
         loginBtn.addEventListener('click', async () => {
             const username = document.getElementById('login-username').value.toLowerCase().trim();
@@ -368,6 +440,25 @@
             return new Promise((resolve) => {
                 canvas.toBlob(resolve, 'image/jpeg', 0.8);
             });
+        }
+
+        function startTimer() {
+            let startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const elapsedTime = Date.now() - startTime;
+                const totalSeconds = Math.floor(elapsedTime / 1000);
+                
+                const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+                const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+                const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+                
+                timerDisplay.textContent = `${hours}:${minutes}:${seconds}`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            timerDisplay.textContent = '00:00:00';
         }
         
         async function startRecording() {
