@@ -1,5 +1,6 @@
 # app.py - True MVP: Voice Router + Simple Endpoints
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Header, HTTPException
+from typing import Optional
 import sqlite3
 from openai import OpenAI
 import base64
@@ -31,23 +32,49 @@ app.add_middleware(
 # Simple DB setup
 def init_db():
     conn = sqlite3.connect("fitness.db")
-    conn.execute("""
+    cursor = conn.cursor()
+
+    # Create users' 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY,
+            username TEXT UNIQUE NOT NULL,
+            age INTEGER,
+            sex TEXT,
+            goal TEXT -- 'lose_weight', 'gain_muscle', or 'maintain'
+        )
+    """)
+
+    # log user's food/exercise entries
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS user_logs (
             id INTEGER PRIMARY KEY,
+            user_id INTEGER,
             timestamp TEXT,
             type TEXT,
             description TEXT,
-            calories INTEGER
+            calories INTEGER,
+            FOREIGN KEY (user_id) REFERENCES users (id)
         )
     """)
+    conn.commit()
     conn.close()
 
 init_db()
 
 
-# Define a Pydantic model for the incoming voice command data
+# Define a Pydantic model for the incoming data
 class VoiceCommandRequest(BaseModel):
     text: str
+
+class User(BaseModel):
+    username: str
+    age: int
+    sex: str
+    goal: str
+
+class LoginRequest(BaseModel):
+    username: str
 
 # =============================================================================
 # VOICE COMMAND ROUTER v2 - NLP Intent Recognition
@@ -133,8 +160,19 @@ async def voice_command(audio: UploadFile = File(...)):
 # =============================================================================
 
 @app.post("/log_food_direct")
-async def log_food_direct(image: UploadFile):
-    """Analyze food and immediately save to DB - no frontend memory needed"""
+async def log_food_direct(image: UploadFile, x_username: str = Header(...)):
+    """Analyze food, immediately save to DB for a specific user."""
+    conn = sqlite3.connect("fitness.db")
+    cursor = conn.cursor()
+    
+    # --- ADDED: Get user_id from username ---
+    cursor.execute("SELECT id FROM users WHERE username = ?", (x_username,))
+    user_record = cursor.fetchone()
+    if not user_record:
+        raise HTTPException(status_code=404, detail="User not found.")
+    user_id = user_record[0]
+    # --- END ADDITION ---
+    conn.close()
     
     # AI call (same as analyze_food)
     image_data = base64.b64encode(await image.read()).decode()
@@ -174,7 +212,7 @@ async def log_food_direct(image: UploadFile):
         return {"error": f"Could not parse calories from AI response: '{parts[2]}'"}
 
     # Always save to DB for this endpoint
-    log_food(type_val, description, calories)
+    log_food(user_id, type_val, description, calories)
     
     return {"description": description, "calories": calories, "saved": True}
 
@@ -223,50 +261,112 @@ async def analyze_food(image: UploadFile):
     return {"description": description, "calories": calories, "saved": False}
 
 
-def log_food(type_val: str, description: str, calories: int):
-    """Logs food to the database"""
+def log_food(user_id: int, type_val: str, description: str, calories: int):
+    """Logs food to the database FOR A SPECIFIC USER."""
     conn = sqlite3.connect("fitness.db")
+    # UPDATED to include user_id in the INSERT statement
     conn.execute(
-        "INSERT INTO user_logs (timestamp, type, description, calories) VALUES (?, ?, ?, ?)",
-        (datetime.now().isoformat(), type_val, description, int(calories))
+        "INSERT INTO user_logs (user_id, timestamp, type, description, calories) VALUES (?, ?, ?, ?, ?)",
+        (user_id, datetime.now().isoformat(), type_val, description, int(calories))
     )
     conn.commit()
     conn.close()
     return {"status": "logged"}
 
+
 @app.post("/log_previous")
-async def log_previous(data: dict):
-    """Directly log pre-analyzed food without re-analysis"""
+async def log_previous(data: dict, x_username: str = Header(...)):
+    """Directly log pre-analyzed food for a specific user."""
     try:
         conn = sqlite3.connect("fitness.db")
-        conn.execute(
-            "INSERT INTO user_logs (timestamp, type, description, calories) VALUES (?, ?, ?, ?)",
-            (datetime.now().isoformat(), data["type"], data["description"], int(data["calories"]))
+        cursor = conn.cursor()
+        
+        # First, get the user's ID from their username
+        cursor.execute("SELECT id FROM users WHERE username = ?", (x_username,))
+        user_record = cursor.fetchone()
+        if not user_record:
+            raise HTTPException(status_code=404, detail="User not found.")
+        user_id = user_record[0]
+
+        # Now, insert the log with the user_id
+        cursor.execute(
+            "INSERT INTO user_logs (user_id, timestamp, type, description, calories) VALUES (?, ?, ?, ?, ?)",
+            (user_id, datetime.now().isoformat(), data["type"], data["description"], int(data["calories"]))
         )
         conn.commit()
         conn.close()
         return {"status": "logged", "description": data["description"], "calories": data["calories"]}
     except Exception as e:
-        return {"error": str(e)}
-    
+        return {"error": str(e)}    
 
 @app.post("/exercise")
-async def start_exercise():
-    """Placeholder for exercise"""
-    return {"message": "Exercise started!"}
+async def start_exercise(x_username: str = Header(...)):
+    """Placeholder for exercise, acknowledges the logged-in user."""
+    # This endpoint can remain simple for now, but requiring the header
+    # makes it consistent with other protected endpoints.
+    return {"message": f"Exercise started for {x_username}!"}
 
 @app.get("/summary")
-async def daily_summary():
-    """Simple daily summary"""
+async def daily_summary(x_username: str = Header(...)):
+    """Simple daily summary for a specific user."""
     conn = sqlite3.connect("fitness.db")
+    cursor = conn.cursor()
+    
+    # --- ADDED: Get user_id from username ---
+    cursor.execute("SELECT id FROM users WHERE username = ?", (x_username,))
+    user_record = cursor.fetchone()
+    if not user_record:
+        conn.close()
+        raise HTTPException(status_code=404, detail="User not found.")
+    user_id = user_record[0]
+    # --- END ADDITION ---
+    
     today = datetime.now().date().isoformat()
     
-    food_calories = conn.execute(
-        "SELECT SUM(calories) FROM user_logs WHERE type='food' AND DATE(timestamp)=?", 
-        (today,)
-    ).fetchone()[0] or 0
+    # --- MODIFIED: Query now filters by user_id ---
+    cursor.execute(
+        "SELECT SUM(calories) FROM user_logs WHERE user_id = ? AND DATE(timestamp) = ?", 
+        (user_id, today)
+    )
+    total_calories = cursor.fetchone()[0] or 0
     
     conn.close()
-    return {"calories_today": food_calories}
+    return {"username": x_username, "calories_today": total_calories}
+
+
+# =============================================================================
+# Auth end points (User Register / Login)
+# =============================================================================
+
+@app.post("/register")
+async def register_user(user: User):
+    """Registers a new user."""
+    conn = sqlite3.connect("fitness.db")
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "INSERT INTO users (username, age, sex, goal) VALUES (?, ?, ?, ?)",
+            (user.username, user.age, user.sex, user.goal)
+        )
+        conn.commit()
+    except sqlite3.IntegrityError:
+        raise HTTPException(status_code=400, detail="Username already exists.")
+    finally:
+        conn.close()
+    return {"status": "User registered successfully", "username": user.username}
+
+@app.post("/login")
+async def login_user(req: LoginRequest):
+    """Logs in a user by checking if they exist."""
+    conn = sqlite3.connect("fitness.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM users WHERE username = ?", (req.username,))
+    user = cursor.fetchone()
+    conn.close()
+    if user:
+        return {"status": "Login successful", "username": req.username}
+    else:
+        raise HTTPException(status_code=404, detail="User not found.")
+
 
 # Run with: uvicorn app:app --reload
