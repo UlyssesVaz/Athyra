@@ -1182,8 +1182,10 @@
                 stream = null;
             }
             
-            authOverlay.classList.remove('hidden');
+            // Hide profile and app, show auth immediately
+            profileOverlay.classList.add('hidden');
             appContainer.classList.add('hidden');
+            authOverlay.classList.remove('hidden');
             
             // Reset forms and show login
             document.getElementById('login-username').value = '';

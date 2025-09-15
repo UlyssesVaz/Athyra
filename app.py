@@ -460,7 +460,7 @@ async def login_user(req: LoginRequest):
     """Logs in a user by checking if they exist."""
     conn = sqlite3.connect("fitness.db")
     cursor = conn.cursor()
-    username = user.username.lower().strip() # Convert to lowercase
+    username = req.username.lower().strip() # Convert to lowercase
     cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
     user = cursor.fetchone()
     conn.close()
