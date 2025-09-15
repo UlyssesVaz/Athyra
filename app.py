@@ -508,4 +508,20 @@ def calculate_target_calories(sex: str, age: int, height_cm: int, weight_kg: int
 
     return int(target_calories)
 
+@app.get("/profile")
+async def get_profile(x_username: str = Header(...)):
+    conn = sqlite3.connect("fitness.db")
+    try:
+        user = get_user_by_username(x_username, conn)
+        return {
+            "username": x_username,
+            "age": user["age"],
+            "sex": user["sex"], 
+            "height_cm": user["height_cm"],
+            "weight_kg": user["weight_kg"],
+            "goal": user["goal"]
+        }
+    finally:
+        conn.close()
+
 # Run with: uvicorn app:app --reload
