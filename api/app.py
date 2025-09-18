@@ -526,6 +526,3 @@ async def get_profile(x_username: str = Header(...)):
 
 # Run with: uvicorn app:app --reload
 
-if __name__ == "__app__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
