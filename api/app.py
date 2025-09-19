@@ -6,6 +6,7 @@ from openai import OpenAI
 import base64
 from datetime import datetime, timedelta
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import json
 
 from dotenv import load_dotenv
@@ -16,6 +17,8 @@ from pydantic import BaseModel, Field
 import re
 
 app = FastAPI()
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
+
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI"))
 
