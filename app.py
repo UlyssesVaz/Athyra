@@ -1,10 +1,10 @@
 # app.py - True MVP: Voice Router + Simple Endpoints
-from fastapi import FastAPI, UploadFile, File, Header, HTTPException
+from fastapi import FastAPI, UploadFile, File, Header, HTTPException, BackgroundTasks
 from typing import Optional, Literal
 import sqlite3
 from openai import OpenAI
 import base64
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi.middleware.cors import CORSMiddleware
 import json
 
@@ -56,6 +56,11 @@ def init_db():
             type TEXT,
             description TEXT,
             calories INTEGER,
+            -- ADD THE FOLLOWING THREE LINES --
+            protein INTEGER DEFAULT 0,
+            carbs INTEGER DEFAULT 0,
+            fats INTEGER DEFAULT 0,
+            -- END OF ADDITIONS --
             FOREIGN KEY (user_id) REFERENCES users (id)
         )
     """)
@@ -185,9 +190,27 @@ async def voice_command(audio: UploadFile = File(...)):
 # =============================================================================
 # Food
 # =============================================================================
+def update_macros_in_background(log_id: int, description: str, calories: int):
+    """Fetches macros from AI and updates the DB record."""
+
+    #currently just a mock function - replace with AI call or condense in /log_food with fine tuned model
+    print(f"BACKGROUND TASK: Estimating macros for log_id {log_id}")
+    macros = estimate_macros_from_food(description, calories)
+    
+    conn = sqlite3.connect("fitness.db")
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE user_logs SET protein = ?, carbs = ?, fats = ? WHERE id = ?",
+        (macros.get("protein", 1), macros.get("carbs", 1), macros.get("fats", 1), log_id)
+    )
+    conn.commit()
+    conn.close()
+    print(f"BACKGROUND TASK: Macros updated for log_id {log_id}")
+
+
 
 @app.post("/log_food_direct")
-async def log_food_direct(image: UploadFile, x_username: str = Header(...)):
+async def log_food_direct(image: UploadFile, background_tasks: BackgroundTasks, x_username: str = Header(...)):
     """Analyze food, immediately save to DB for a specific user."""
     conn = sqlite3.connect("fitness.db")
     cursor = conn.cursor()
@@ -239,7 +262,9 @@ async def log_food_direct(image: UploadFile, x_username: str = Header(...)):
         return {"error": f"Could not parse calories from AI response: '{parts[2]}'"}
 
     # Always save to DB for this endpoint
-    log_food(user_id, type_val, description, calories)
+    log_id = log_food(user_id, type_val, description, calories)
+
+    background_tasks.add_task(update_macros_in_background, log_id, description, calories)
     
     return {"description": description, "calories": calories, "saved": True}
 
@@ -288,21 +313,22 @@ async def analyze_food(image: UploadFile):
     return {"description": description, "calories": calories, "saved": False}
 
 
-def log_food(user_id: int, type_val: str, description: str, calories: int):
-    """Logs food to the database FOR A SPECIFIC USER."""
+def log_food(user_id: int, type_val: str, description: str, calories: int) -> int:
+    """Logs food to the database and returns the new log's ID."""
     conn = sqlite3.connect("fitness.db")
-    # UPDATED to include user_id in the INSERT statement
-    conn.execute(
+    cursor = conn.cursor()
+    cursor.execute(
         "INSERT INTO user_logs (user_id, timestamp, type, description, calories) VALUES (?, ?, ?, ?, ?)",
         (user_id, datetime.now().isoformat(), type_val, description, int(calories))
     )
+    log_id = cursor.lastrowid  # Get the ID of the new row
     conn.commit()
     conn.close()
-    return {"status": "logged"}
+    return log_id
 
 
 @app.post("/log_previous")
-async def log_previous(data: dict, x_username: str = Header(...)):
+async def log_previous(data: dict, background_tasks: BackgroundTasks, x_username: str = Header(...)):
     """Directly log pre-analyzed food for a specific user."""
     try:
         conn = sqlite3.connect("fitness.db")
@@ -315,13 +341,20 @@ async def log_previous(data: dict, x_username: str = Header(...)):
             raise HTTPException(status_code=404, detail="User not found.")
         user_id = user_record[0]
 
+        description = data["description"]
+        calories = int(data["calories"])
+
         # Now, insert the log with the user_id
         cursor.execute(
             "INSERT INTO user_logs (user_id, timestamp, type, description, calories) VALUES (?, ?, ?, ?, ?)",
             (user_id, datetime.now().isoformat(), data["type"], data["description"], int(data["calories"]))
         )
+        log_id = cursor.lastrowid
         conn.commit()
         conn.close()
+
+        background_tasks.add_task(update_macros_in_background, log_id, description, calories)
+        
         return {"status": "logged", "description": data["description"], "calories": data["calories"]}
     except Exception as e:
         return {"error": str(e)}    
@@ -431,6 +464,273 @@ async def daily_summary(x_username: str = Header(...)):
         "remaining_calories": remaining,
         "goal": user["goal"]
     }
+
+@app.get("/macro_summary")
+async def get_macro_summary(x_username: str = Header(...)):
+    """Get macro nutrient breakdown from food logs."""
+    conn = sqlite3.connect("fitness.db")
+    try:
+        user = get_user_by_username(x_username, conn)
+        
+        # Get today's food logs
+        today = datetime.now().date().isoformat()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT description, calories FROM user_logs WHERE user_id = ? AND DATE(timestamp) = ?", 
+            (user["id"], today)
+        )
+        
+        food_logs = cursor.fetchall()
+        
+        # Calculate macros using AI estimation
+        total_protein = 0
+        total_carbs = 0
+        total_fats = 0
+        
+        for description, calories in food_logs:
+            # Use AI to estimate macros from food description
+            macros = estimate_macros_from_food(description, calories)
+            total_protein += macros["protein"]
+            total_carbs += macros["carbs"]
+            total_fats += macros["fats"]
+        
+        # Calculate targets based on user's calorie goal
+        target_calories = calculate_target_calories(
+            sex=user["sex"], age=user["age"], 
+            height_cm=user["height_cm"], weight_kg=user["weight_kg"], 
+            goal=user["goal"]
+        )
+        
+        # Standard macro ratios: 30% protein, 40% carbs, 30% fats
+        target_protein = (target_calories * 0.30) / 4  # 4 calories per gram protein
+        target_carbs = (target_calories * 0.40) / 4    # 4 calories per gram carbs
+        target_fats = (target_calories * 0.30) / 9     # 9 calories per gram fat
+        
+        return {
+            "protein": {
+                "current": round(total_protein),
+                "target": round(target_protein),
+                "percentage": min(round((total_protein / target_protein) * 100), 100)
+            },
+            "carbs": {
+                "current": round(total_carbs),
+                "target": round(target_carbs),
+                "percentage": min(round((total_carbs / target_carbs) * 100), 100)
+            },
+            "fats": {
+                "current": round(total_fats),
+                "target": round(target_fats),
+                "percentage": min(round((total_fats / target_fats) * 100), 100)
+            }
+        }
+        
+    finally:
+        conn.close()
+
+def estimate_macros_from_food(description: str, calories: int):
+    """
+    Use AI to estimate macro breakdown from food description.
+    This replaces the mock data with AI-powered estimates.
+    """
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{
+                "role": "user",
+                "content": f"""
+                Estimate the macro nutrient breakdown for this food: "{description}" with {calories} calories.
+                
+                Return ONLY a JSON object with this exact format:
+                {{"protein": X, "carbs": Y, "fats": Z}}
+                
+                Where X, Y, Z are grams (integers). Make sure the macros roughly add up to the calorie count:
+                - Protein: 4 calories per gram
+                - Carbs: 4 calories per gram  
+                - Fats: 9 calories per gram
+                """
+            }],
+            response_format={"type": "json_object"}
+        )
+        
+        result = json.loads(response.choices[0].message.content)
+        return {
+            "protein": result.get("protein", 0),
+            "carbs": result.get("carbs", 0),
+            "fats": result.get("fats", 0)
+        }
+        
+    except Exception as e:
+        print(f"Error estimating macros: {e}")
+        # Fallback to simple estimation if AI fails
+        return {
+            "protein": calories * 0.25 / 4,  # 25% from protein
+            "carbs": calories * 0.50 / 4,    # 50% from carbs  
+            "fats": calories * 0.25 / 9      # 25% from fats
+        }
+
+@app.get("/exercise_summary")
+async def get_exercise_summary(x_username: str = Header(...)):
+    """Get today's exercise summary from exercise logs."""
+    conn = sqlite3.connect("fitness.db")
+    conn.row_factory = sqlite3.Row
+    try:
+        user = get_user_by_username(x_username, conn)
+        
+        # Get today's completed exercises
+        today = datetime.now().date().isoformat()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT exercise_type, duration_seconds, calories_burned, start_time, end_time
+            FROM exercise_logs 
+            WHERE user_id = ? AND DATE(start_time) = ? AND end_time IS NOT NULL
+            ORDER BY start_time DESC
+        """, (user["id"], today))
+        
+        exercises = cursor.fetchall()
+        
+        exercise_list = []
+        total_calories = 0
+        
+        for exercise in exercises:
+            duration_minutes = exercise["duration_seconds"] // 60
+            calories = exercise["calories_burned"] or 0
+            total_calories += calories
+            
+            # Check if this is a personal record (simple version - longest duration for this exercise type)
+            cursor.execute("""
+                SELECT MAX(duration_seconds) as max_duration
+                FROM exercise_logs 
+                WHERE user_id = ? AND exercise_type = ? AND end_time IS NOT NULL
+            """, (user["id"], exercise["exercise_type"]))
+            
+            max_record = cursor.fetchone()
+            is_pr = max_record and exercise["duration_seconds"] == max_record["max_duration"]
+            
+            # Map exercise types to emojis
+            exercise_icons = {
+                "running": "🏃",
+                "walking": "🚶", 
+                "cycling": "🚴",
+                "swimming": "🏊",
+                "strength": "💪",
+                "yoga": "🧘",
+                "other": "🏃"
+            }
+            
+            exercise_list.append({
+                "type": exercise["exercise_type"].title(),
+                "icon": exercise_icons.get(exercise["exercise_type"], "🏃"),
+                "duration": f"{duration_minutes} min",
+                "calories": calories,
+                "isPR": is_pr,
+                "start_time": exercise["start_time"]
+            })
+        
+        return {
+            "exercises": exercise_list,
+            "total_calories": total_calories
+        }
+        
+    finally:
+        conn.close()
+
+@app.get("/streak_data")
+async def get_streak_data(x_username: str = Header(...)):
+    """Calculate streak data from user activity logs."""
+    conn = sqlite3.connect("fitness.db")
+    try:
+        user = get_user_by_username(x_username, conn)
+        
+        # Get all days with activity (food logs or exercise) in the last 60 days
+        cursor = conn.cursor()
+        sixty_days_ago = (datetime.now() - timedelta(days=60)).date().isoformat()
+        
+        # Get days with food logs
+        cursor.execute("""
+            SELECT DISTINCT DATE(timestamp) as activity_date
+            FROM user_logs 
+            WHERE user_id = ? AND DATE(timestamp) >= ?
+            
+            UNION
+            
+            SELECT DISTINCT DATE(start_time) as activity_date  
+            FROM exercise_logs
+            WHERE user_id = ? AND DATE(start_time) >= ? AND end_time IS NOT NULL
+            
+            ORDER BY activity_date DESC
+        """, (user["id"], sixty_days_ago, user["id"], sixty_days_ago))
+        
+        active_dates = [row[0] for row in cursor.fetchall()]
+        
+        # Calculate current streak
+        current_streak = 0
+        today = datetime.now().date()
+        
+        # Check if today has activity
+        today_str = today.isoformat()
+        if today_str in active_dates:
+            current_streak = 1
+            
+            # Count backwards from today
+            check_date = today - timedelta(days=1)
+            while check_date.isoformat() in active_dates:
+                current_streak += 1
+                check_date -= timedelta(days=1)
+        
+        # Calculate longest streak (simplified - you might want to optimize this)
+        longest_streak = current_streak
+        temp_streak = 0
+        
+        for i, date_str in enumerate(active_dates):
+            if i == 0:
+                temp_streak = 1
+                continue
+                
+            current_date = datetime.fromisoformat(date_str).date()
+            previous_date = datetime.fromisoformat(active_dates[i-1]).date()
+            
+            if (previous_date - current_date).days == 1:
+                temp_streak += 1
+                longest_streak = max(longest_streak, temp_streak)
+            else:
+                temp_streak = 1
+        
+        # Generate calendar for current month
+        now = datetime.now()
+        first_day = now.replace(day=1)
+        if now.month == 12:
+            last_day = now.replace(year=now.year + 1, month=1, day=1) - timedelta(days=1)
+        else:
+            last_day = now.replace(month=now.month + 1, day=1) - timedelta(days=1)
+        
+        calendar_data = []
+        current_date = first_day
+        completed_days = 0
+        
+        while current_date <= last_day:
+            date_str = current_date.isoformat()
+            is_completed = date_str in active_dates
+            if is_completed:
+                completed_days += 1
+                
+            calendar_data.append({
+                "day": current_date.day,
+                "completed": is_completed,
+                "is_today": current_date.date() == today
+            })
+            current_date += timedelta(days=1)
+        
+        return {
+            "current_streak": current_streak,
+            "longest_streak": longest_streak,
+            "month_progress": completed_days,
+            "month_total": last_day.day,
+            "calendar": calendar_data,
+            "month_name": now.strftime("%B")
+        }
+        
+    finally:
+        conn.close()
 
 
 # =============================================================================

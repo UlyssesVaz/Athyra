@@ -515,6 +515,312 @@
             background: rgba(239, 68, 68, 0.3);
         }
 
+        /* Progress page specific styles */
+        .progress-page {
+            max-height: 90vh;
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+
+        .progress-section {
+            margin-bottom: 20px;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .energy-balance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .energy-balance-main {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .time-indicator {
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+        }
+
+        .progress-bar-container {
+            margin: 15px 0;
+        }
+
+        .progress-bar-full {
+            height: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            position: relative;
+            overflow: visible;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            position: relative;
+            transition: width 0.8s ease-out;
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .typical-marker {
+            position: absolute;
+            top: -2px;
+            width: 12px;
+            height: 12px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 50%;
+            transform: translateX(-50%);
+        }
+
+        .macro-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .macro-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .macro-info {
+            flex: 1;
+        }
+
+        .macro-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 2px;
+        }
+
+        .macro-description {
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .macro-progress {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .circular-progress {
+            position: relative;
+            width: 50px;
+            height: 50px;
+        }
+
+        .circular-progress svg {
+            transform: rotate(-90deg);
+        }
+
+        .circular-progress-bg {
+            fill: none;
+            stroke: rgba(255,255,255,0.2);
+            stroke-width: 3;
+        }
+
+        .circular-progress-fill {
+            fill: none;
+            stroke-width: 3;
+            stroke-linecap: round;
+            transition: stroke-dasharray 0.8s ease-out;
+        }
+
+        .circular-progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .macro-values {
+            text-align: right;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .linear-progress {
+            width: 80px;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .linear-progress-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.8s ease-out;
+        }
+
+        .exercise-list {
+            margin-top: 15px;
+        }
+
+        .exercise-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .exercise-item:last-child {
+            border-bottom: none;
+        }
+
+        .exercise-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .exercise-icon {
+            font-size: 20px;
+        }
+
+        .exercise-details h4 {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .exercise-meta {
+            color: rgba(255,255,255,0.6);
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .exercise-calories {
+            color: #f59e0b;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .pr-badge {
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .streak-container {
+            text-align: center;
+        }
+
+        .current-streak {
+            font-size: 32px;
+            font-weight: 700;
+            color: #f59e0b;
+            margin: 10px 0;
+        }
+
+        .streak-fires {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        .fire-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .fire-icon.active {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .fire-icon.inactive {
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.4);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin: 20px 0;
+        }
+
+        .calendar-header {
+            text-align: center;
+            color: rgba(255,255,255,0.6);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 8px 0;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .calendar-day.completed {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            color: white;
+        }
+
+        .calendar-day.incomplete {
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.6);
+        }
+
+        .calendar-day.today {
+            border: 2px solid #06b6d4;
+        }
+
+        .motivation-quote {
+            text-align: center;
+            font-style: italic;
+            color: rgba(255,255,255,0.8);
+            font-size: 14px;
+            line-height: 1.4;
+            margin-top: 15px;
+        }
+
     </style>
 </head>
 <body>
@@ -568,6 +874,250 @@
         </div>
     </div>
 
+
+    <!-- Progress Page Overlay -->
+        <div id="progress-overlay" class="auth-overlay hidden">
+            <div class="auth-container progress-page">
+                <h2 class="auth-title">Progress</h2>
+                <div style="color: rgba(255,255,255,0.6); text-align: center; margin-bottom: 30px;">Track your daily energy and achievements</div>
+                
+                <!-- Energy Balance Section -->
+                <div class="progress-section">
+                    <div class="energy-balance-header">
+                        <div class="energy-balance-main" id="progress-energy-balance">1300 / 2100</div>
+                        <div class="time-indicator" id="progress-time">4:40 PM</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-full">
+                            <div class="progress-bar-fill" id="progress-energy-fill" style="background: linear-gradient(90deg, #4ade80, #22c55e); width: 62%"></div>
+                            <div class="typical-marker" style="left: 65%"></div>
+                        </div>
+                        <div class="progress-labels">
+                            <span>0</span>
+                            <span style="color: rgba(255,255,255,0.8);">Typical by now</span>
+                            <span>2100</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Macro Breakdown Section -->
+                <div class="progress-section">
+                    <h3 style="color: white; font-size: 18px; font-weight: 600; margin-bottom: 8px;">What's in your Fuel?</h3>
+                    <div style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 15px;">Track your macro nutrients for optimal health</div>
+                    
+                    <div class="macro-grid">
+                        <!-- Protein -->
+                        <div class="macro-item">
+                            <div class="macro-info">
+                                <div class="macro-name">Protein</div>
+                                <div class="macro-description">For muscle repair & fullness</div>
+                            </div>
+                            <div class="macro-progress">
+                                <div class="circular-progress">
+                                    <svg width="50" height="50">
+                                        <circle cx="25" cy="25" r="20" class="circular-progress-bg"></circle>
+                                        <circle cx="25" cy="25" r="20" class="circular-progress-fill" style="stroke: #4ade80; stroke-dasharray: 89 126;"></circle>
+                                    </svg>
+                                    <div class="circular-progress-text">71%</div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                    <div class="macro-values">85g/120g</div>
+                                    <div class="linear-progress">
+                                        <div class="linear-progress-fill" style="background: linear-gradient(90deg, #4ade80, #22c55e); width: 71%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Carbs -->
+                        <div class="macro-item">
+                            <div class="macro-info">
+                                <div class="macro-name">Carbs</div>
+                                <div class="macro-description">For energy to move & think</div>
+                            </div>
+                            <div class="macro-progress">
+                                <div class="circular-progress">
+                                    <svg width="50" height="50">
+                                        <circle cx="25" cy="25" r="20" class="circular-progress-bg"></circle>
+                                        <circle cx="25" cy="25" r="20" class="circular-progress-fill" style="stroke: #06b6d4; stroke-dasharray: 103 126;"></circle>
+                                    </svg>
+                                    <div class="circular-progress-text">82%</div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                    <div class="macro-values">180g/220g</div>
+                                    <div class="linear-progress">
+                                        <div class="linear-progress-fill" style="background: linear-gradient(90deg, #06b6d4, #0891b2); width: 82%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fats -->
+                        <div class="macro-item">
+                            <div class="macro-info">
+                                <div class="macro-name">Fats</div>
+                                <div class="macro-description">For hormone health & vitamin absorption</div>
+                            </div>
+                            <div class="macro-progress">
+                                <div class="circular-progress">
+                                    <svg width="50" height="50">
+                                        <circle cx="25" cy="25" r="20" class="circular-progress-bg"></circle>
+                                        <circle cx="25" cy="25" r="20" class="circular-progress-fill" style="stroke: #f59e0b; stroke-dasharray: 102 126;"></circle>
+                                    </svg>
+                                    <div class="circular-progress-text">81%</div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                    <div class="macro-values">65g/80g</div>
+                                    <div class="linear-progress">
+                                        <div class="linear-progress-fill" style="background: linear-gradient(90deg, #f59e0b, #d97706); width: 81%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="auth-button" style="background: linear-gradient(90deg, #4ade80, #22c55e); margin-top: 20px;">
+                        + Log Meal
+                    </button>
+                </div>
+
+                <!-- Exercise Section -->
+                <div class="progress-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div>
+                            <h3 style="color: white; font-size: 18px; font-weight: 600; margin-bottom: 4px;">How You Used Your Energy</h3>
+                            <div style="color: rgba(255,255,255,0.6); font-size: 14px;">Every movement matters</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="color: #f59e0b; font-size: 14px; font-weight: 600;">⚡ 550 Cal</div>
+                            <div style="color: rgba(255,255,255,0.6); font-size: 12px;">burned today</div>
+                        </div>
+                    </div>
+
+                    <div class="exercise-list">
+                        <div class="exercise-item">
+                            <div class="exercise-info">
+                                <div class="exercise-icon">🏃</div>
+                                <div class="exercise-details">
+                                    <h4>Running</h4>
+                                    <div class="exercise-meta">
+                                        <span>3.2 miles</span>
+                                        <span>• 30 min</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                <div class="exercise-calories">-350 Cal</div>
+                                <div style="display: flex; align-items: center;">
+                                    <div style="color: rgba(255,255,255,0.6); font-size: 12px;">New Record!</div>
+                                    <div class="pr-badge">🏆 PR!</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="exercise-item">
+                            <div class="exercise-info">
+                                <div class="exercise-icon">💪</div>
+                                <div class="exercise-details">
+                                    <h4>Strength Training</h4>
+                                    <div class="exercise-meta">
+                                        <span>45 min</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="exercise-calories">-200 Cal</div>
+                        </div>
+                    </div>
+
+                    <button class="auth-button" style="background: linear-gradient(90deg, #06b6d4, #0891b2); margin-top: 20px;">
+                        + Log Workout
+                    </button>
+                </div>
+
+                <!-- Streak Section -->
+                <div class="progress-section">
+                    <div class="streak-container">
+                        <h3 style="color: white; font-size: 18px; font-weight: 600; margin-bottom: 8px;">Streak</h3>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0;">
+                            <div style="color: rgba(255,255,255,0.8); font-size: 14px;">
+                                🔥 Current Streak
+                            </div>
+                            <div style="text-align: right;">
+                                <div class="current-streak">5 days</div>
+                                <div style="color: rgba(255,255,255,0.6); font-size: 12px;">Best: 12 days</div>
+                            </div>
+                        </div>
+
+                        <div class="streak-fires">
+                            <div class="fire-icon active">🔥</div>
+                            <div class="fire-icon active">🔥</div>
+                            <div class="fire-icon active">🔥</div>
+                            <div class="fire-icon active">🔥</div>
+                            <div class="fire-icon active">🔥</div>
+                            <div class="fire-icon inactive">🔥</div>
+                            <div class="fire-icon inactive">🔥</div>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 10px 0;">
+                            <div style="color: rgba(255,255,255,0.8); font-size: 14px;">
+                                📅 December Progress
+                            </div>
+                            <div style="color: #06b6d4; font-size: 14px; font-weight: 600;">27/31 days</div>
+                        </div>
+
+                        <div class="calendar-grid">
+                            <div class="calendar-header">M</div>
+                            <div class="calendar-header">T</div>
+                            <div class="calendar-header">W</div>
+                            <div class="calendar-header">T</div>
+                            <div class="calendar-header">F</div>
+                            <div class="calendar-header">S</div>
+                            <div class="calendar-header">S</div>
+                            
+                            <div class="calendar-day completed">1</div>
+                            <div class="calendar-day completed">2</div>
+                            <div class="calendar-day completed">3</div>
+                            <div class="calendar-day completed">4</div>
+                            <div class="calendar-day completed">5</div>
+                            <div class="calendar-day completed">6</div>
+                            <div class="calendar-day completed">7</div>
+                            <div class="calendar-day completed">8</div>
+                            <div class="calendar-day completed">9</div>
+                            <div class="calendar-day completed">10</div>
+                            <div class="calendar-day completed">11</div>
+                            <div class="calendar-day completed">12</div>
+                            <div class="calendar-day completed">13</div>
+                            <div class="calendar-day incomplete">14</div>
+                            <div class="calendar-day completed">15</div>
+                            <div class="calendar-day incomplete">16</div>
+                            <div class="calendar-day completed">17</div>
+                            <div class="calendar-day today completed">18</div>
+                            <div class="calendar-day completed">19</div>
+                            <div class="calendar-day completed">20</div>
+                            <div class="calendar-day completed">21</div>
+                            <div class="calendar-day completed">22</div>
+                            <div class="calendar-day completed">23</div>
+                            <div class="calendar-day completed">24</div>
+                            <div class="calendar-day completed">25</div>
+                            <div class="calendar-day completed">26</div>
+                            <div class="calendar-day incomplete">27</div>
+                            <div class="calendar-day completed">28</div>
+                            <div class="calendar-day incomplete">29</div>
+                            <div class="calendar-day completed">30</div>
+                            <div class="calendar-day completed">31</div>
+                        </div>
+
+                        <div class="motivation-quote">
+                            "Consistency compounds. Every day you show up builds momentum for tomorrow."
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Back Button -->
+                <button class="auth-button secondary" id="back-to-app-from-progress" style="margin-top: 20px;">Back to App</button>
+            </div>
+        </div>
     <!-- Profile Page Overlay -->
         <div id="profile-overlay" class="auth-overlay hidden">
             <div class="auth-container">
@@ -765,6 +1315,22 @@
             // Profile page buttons
             document.getElementById('back-to-app').addEventListener('click', hideProfile);
             document.getElementById('logout-btn').addEventListener('click', handleLogout);
+            
+            // Progress page buttons
+            document.getElementById('back-to-app-from-progress').addEventListener('click', hideProgressPage);
+
+            // Add listeners for Log Meal and Log Workout buttons (we'll add these after DOM loads)
+            setTimeout(() => {
+                const logMealBtn = document.querySelector('.progress-section:nth-child(3) .auth-button');
+                const logWorkoutBtn = document.querySelector('.progress-section:nth-child(4) .auth-button');
+                
+                if (logMealBtn) {
+                    logMealBtn.addEventListener('click', handleLogMealFromProgress);
+                }
+                if (logWorkoutBtn) {
+                    logWorkoutBtn.addEventListener('click', handleLogWorkoutFromProgress);
+                }
+            }, 100);
         }
 
         function switchTab(tab) {
@@ -773,8 +1339,228 @@
                 item.classList.toggle('active', item.dataset.tab === tab);
             });
             
-            // Update card content based on tab
-            updateCardForTab(tab);
+            // Handle different tabs
+            if (tab === 'progress') {
+                showProgressPage();
+            } else {
+                // Update card content for other tabs
+                updateCardForTab(tab);
+            }
+        }
+
+        function updateCardForTab(tab) {
+            switch(tab) {
+                case 'progress':
+                    // This is now handled by showProgressPage()
+                    break;
+                case 'coach':
+                    showCard('Ready to Track', 'Hold the mic button and say "analyze this food" or "log this food"');
+                    break;
+                case 'planner+':
+                    showCard('Planner+', 'Coming soon - MCP powered meal planner, time scheduler, etc., to hit your goals');
+                    break;
+            }
+        }
+
+        async function showProgressPage() {
+            console.log('Showing progress page...');
+            
+            // Show progress overlay
+            document.getElementById('progress-overlay').classList.remove('hidden');
+            
+            // Load progress data
+            await loadProgressData();
+        }
+
+        function hideProgressPage() {
+            document.getElementById('progress-overlay').classList.add('hidden');
+            
+            // Reset to coach tab when going back
+            switchTab('coach');
+        }
+
+        async function loadProgressData() {
+            if (!currentUser) return;
+            
+            try {
+                // Update time
+                const now = new Date();
+                const timeString = now.getHours().toString().padStart(2, '0') + ':' + 
+                                now.getMinutes().toString().padStart(2, '0');
+                document.getElementById('progress-time').textContent = timeString;
+                
+                // Get summary data (we already have this endpoint)
+                const summaryResponse = await fetch(`${API_BASE}/summary`, {
+                    headers: { 'X-Username': currentUser }
+                });
+                
+                if (summaryResponse.ok) {
+                    const summaryData = await summaryResponse.json();
+                    
+                    // Update energy balance
+                    document.getElementById('progress-energy-balance').textContent = 
+                        `${summaryData.consumed_today} / ${summaryData.target_calories}`;
+                    
+                    const percentage = (summaryData.consumed_today / summaryData.target_calories) * 100;
+                    document.getElementById('progress-energy-fill').style.width = Math.min(percentage, 100) + '%';
+                    
+                    // Calculate typical progress based on time of day
+                    const currentHour = now.getHours();
+                    const typicalPercentage = Math.min((currentHour / 24) * 100, 100);
+                    const typicalMarker = document.querySelector('.typical-marker');
+                    if (typicalMarker) {
+                        typicalMarker.style.left = typicalPercentage + '%';
+                    }
+                }
+                
+                // For now, we'll use mock data for macros and exercise since we don't have those endpoints yet
+                // In a real implementation, you'd fetch this data from additional endpoints
+                await updateMacroProgress();
+                await updateExerciseData();
+                await updateStreakData();
+                
+            } catch (err) {
+                console.error('Failed to load progress data:', err);
+                // Show with existing mock data
+            }
+        }
+
+        async function updateMacroProgress() {
+            // Mock macro data - in real implementation, this would come from your food logs
+            const macros = {
+                protein: { current: 85, target: 120, percentage: 71 },
+                carbs: { current: 180, target: 220, percentage: 82 },
+                fats: { current: 65, target: 80, percentage: 81 }
+            };
+            
+            // Update protein
+            const proteinCircle = document.querySelector('.macro-item:nth-child(1) .circular-progress-fill');
+            const proteinText = document.querySelector('.macro-item:nth-child(1) .circular-progress-text');
+            const proteinValues = document.querySelector('.macro-item:nth-child(1) .macro-values');
+            const proteinLinear = document.querySelector('.macro-item:nth-child(1) .linear-progress-fill');
+            
+            if (proteinCircle) {
+                const circumference = 2 * Math.PI * 20;
+                const strokeDasharray = `${(macros.protein.percentage / 100) * circumference} ${circumference}`;
+                proteinCircle.style.strokeDasharray = strokeDasharray;
+            }
+            if (proteinText) proteinText.textContent = macros.protein.percentage + '%';
+            if (proteinValues) proteinValues.textContent = `${macros.protein.current}g/${macros.protein.target}g`;
+            if (proteinLinear) proteinLinear.style.width = macros.protein.percentage + '%';
+            
+            // Similar updates for carbs and fats...
+            const carbsCircle = document.querySelector('.macro-item:nth-child(2) .circular-progress-fill');
+            const carbsText = document.querySelector('.macro-item:nth-child(2) .circular-progress-text');
+            const carbsValues = document.querySelector('.macro-item:nth-child(2) .macro-values');
+            const carbsLinear = document.querySelector('.macro-item:nth-child(2) .linear-progress-fill');
+            
+            if (carbsCircle) {
+                const circumference = 2 * Math.PI * 20;
+                const strokeDasharray = `${(macros.carbs.percentage / 100) * circumference} ${circumference}`;
+                carbsCircle.style.strokeDasharray = strokeDasharray;
+            }
+            if (carbsText) carbsText.textContent = macros.carbs.percentage + '%';
+            if (carbsValues) carbsValues.textContent = `${macros.carbs.current}g/${macros.carbs.target}g`;
+            if (carbsLinear) carbsLinear.style.width = macros.carbs.percentage + '%';
+            
+            const fatsCircle = document.querySelector('.macro-item:nth-child(3) .circular-progress-fill');
+            const fatsText = document.querySelector('.macro-item:nth-child(3) .circular-progress-text');
+            const fatsValues = document.querySelector('.macro-item:nth-child(3) .macro-values');
+            const fatsLinear = document.querySelector('.macro-item:nth-child(3) .linear-progress-fill');
+            
+            if (fatsCircle) {
+                const circumference = 2 * Math.PI * 20;
+                const strokeDasharray = `${(macros.fats.percentage / 100) * circumference} ${circumference}`;
+                fatsCircle.style.strokeDasharray = strokeDasharray;
+            }
+            if (fatsText) fatsText.textContent = macros.fats.percentage + '%';
+            if (fatsValues) fatsValues.textContent = `${macros.fats.current}g/${macros.fats.target}g`;
+            if (fatsLinear) fatsLinear.style.width = macros.fats.percentage + '%';
+        }
+
+        async function updateExerciseData() {
+            // Mock exercise data - in real implementation, this would come from exercise_logs table
+            // You could create a new endpoint like GET /exercise_summary
+            const exercises = [
+                {
+                    type: 'Running',
+                    icon: '🏃',
+                    duration: '30 min',
+                    distance: '3.2 miles',
+                    calories: 350,
+                    isPR: true
+                },
+                {
+                    type: 'Strength Training',
+                    icon: '💪',
+                    duration: '45 min',
+                    calories: 200,
+                    isPR: false
+                }
+            ];
+            
+            // Update total calories burned
+            const totalCalories = exercises.reduce((sum, ex) => sum + ex.calories, 0);
+            const caloriesElement = document.querySelector('.progress-section:nth-child(4) .exercise-calories');
+            if (caloriesElement) {
+                caloriesElement.textContent = `⚡ ${totalCalories} Cal`;
+            }
+        }
+
+        async function updateStreakData() {
+            // Mock streak data - in real implementation, you'd calculate this from user_logs
+            // You could create an endpoint like GET /streak_data
+            const today = new Date();
+            const currentStreak = 5;
+            const bestStreak = 12;
+            const monthProgress = 27;
+            const monthTotal = 31;
+            
+            // Update streak numbers
+            const streakElement = document.querySelector('.current-streak');
+            if (streakElement) {
+                streakElement.textContent = `${currentStreak} days`;
+            }
+            
+            // Update month progress
+            const monthElement = document.querySelector('.progress-section:last-child [style*="color: #06b6d4"]');
+            if (monthElement) {
+                monthElement.textContent = `${monthProgress}/${monthTotal} days`;
+            }
+            
+            // Update fire icons based on current streak
+            const fireIcons = document.querySelectorAll('.fire-icon');
+            fireIcons.forEach((icon, index) => {
+                if (index < currentStreak) {
+                    icon.classList.remove('inactive');
+                    icon.classList.add('active');
+                } else {
+                    icon.classList.remove('active');
+                    icon.classList.add('inactive');
+                }
+            });
+            
+            // Update calendar - mark today
+            const calendarDays = document.querySelectorAll('.calendar-day');
+            const todayDate = today.getDate();
+            calendarDays.forEach(day => {
+                const dayNumber = parseInt(day.textContent);
+                if (dayNumber === todayDate) {
+                    day.classList.add('today');
+                }
+            });
+        }
+
+        // Handle Log Meal button from progress page
+        function handleLogMealFromProgress() {
+            hideProgressPage();
+            showCard('Ready to Log Food', 'Hold the mic button and say "log this food" while pointing at your meal');
+        }
+
+        // Handle Log Workout button from progress page
+        function handleLogWorkoutFromProgress() {
+            hideProgressPage();
+            showCard('Ready to Log Workout', 'Hold the mic button and say "start my run" or "going for a workout"');
         }
 
         function hideProfile() {
