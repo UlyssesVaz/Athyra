@@ -17,7 +17,6 @@ from pydantic import BaseModel, Field
 import re
 
 app = FastAPI()
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI"))
@@ -826,6 +825,8 @@ async def get_profile(x_username: str = Header(...)):
         }
     finally:
         conn.close()
+
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
 # Run with: uvicorn app:app --reload
 

@@ -981,44 +981,12 @@
                             <div style="color: rgba(255,255,255,0.6); font-size: 14px;">Every movement matters</div>
                         </div>
                         <div style="text-align: right;">
-                            <div style="color: #f59e0b; font-size: 14px; font-weight: 600;">⚡ 550 Cal</div>
+                            <div id="total-calories-burned" style="color: #f59e0b; font-size: 14px; font-weight: 600;">⚡ 0 Cal</div>
                             <div style="color: rgba(255,255,255,0.6); font-size: 12px;">burned today</div>
                         </div>
                     </div>
 
                     <div class="exercise-list">
-                        <div class="exercise-item">
-                            <div class="exercise-info">
-                                <div class="exercise-icon">🏃</div>
-                                <div class="exercise-details">
-                                    <h4>Running</h4>
-                                    <div class="exercise-meta">
-                                        <span>3.2 miles</span>
-                                        <span>• 30 min</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                                <div class="exercise-calories">-350 Cal</div>
-                                <div style="display: flex; align-items: center;">
-                                    <div style="color: rgba(255,255,255,0.6); font-size: 12px;">New Record!</div>
-                                    <div class="pr-badge">🏆 PR!</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="exercise-item">
-                            <div class="exercise-info">
-                                <div class="exercise-icon">💪</div>
-                                <div class="exercise-details">
-                                    <h4>Strength Training</h4>
-                                    <div class="exercise-meta">
-                                        <span>45 min</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="exercise-calories">-200 Cal</div>
-                        </div>
                     </div>
 
                     <button class="auth-button" style="background: linear-gradient(90deg, #06b6d4, #0891b2); margin-top: 20px;">
@@ -1375,6 +1343,7 @@
                 }
                 
                 await updateMacroProgress();
+                await updateExerciseData();
                 
             } catch (err) {
                 console.error('Failed to load progress data:', err);
@@ -1413,6 +1382,57 @@
 
             } catch (err) {
                 console.error('Error updating macro progress:', err);
+            }
+        }
+
+        async function updateExerciseData() {
+            try {
+                const response = await fetch(`${API_BASE}/exercise_summary`, {
+                    headers: { 'X-Username': currentUser }
+                });
+
+                if (!response.ok) {
+                    console.error('Failed to fetch exercise summary');
+                    return;
+                }
+
+                const data = await response.json();
+                const exerciseList = document.querySelector('.exercise-list');
+                // This selector correctly targets the total calories element in the third progress section
+                const totalCaloriesElement = document.getElementById('total-calories-burned');
+                // This check prevents silent errors if the HTML structure changes
+                if (!exerciseList || !totalCaloriesElement) return;
+
+                // 2. Update the total calories burned at the top of the section
+                totalCaloriesElement.textContent = `⚡ ${data.total_calories} Cal`;
+
+                // 3. Populate the list with fetched exercise data
+                if (data.exercises.length === 0) {
+                    exerciseList.innerHTML = '<div style="color: rgba(255,255,255,0.6); font-size: 14px; text-align: center;">No workouts logged today.</div>';
+                } else {
+                    const exerciseItemsHTML = data.exercises.map(ex => `
+                        <div class="exercise-item">
+                            <div class="exercise-info">
+                                <div class="exercise-icon">${ex.icon}</div>
+                                <div class="exercise-details">
+                                    <h4>${ex.type}</h4>
+                                    <div class="exercise-meta">
+                                        <span>${ex.duration}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                <div class="exercise-calories">-${ex.calories} Cal</div>
+                                ${ex.isPR ? '<div class="pr-badge">🏆 PR!</div>' : ''}
+                            </div>
+                        </div>
+                    `).join('');
+
+                    // Set the innerHTML just one time with the complete list
+                    exerciseList.innerHTML = exerciseItemsHTML;
+                }
+            } catch (err) {
+                console.error('Error updating exercise data:', err);
             }
         }
 
