@@ -824,7 +824,6 @@
     </style>
 </head>
 <body>
-    <!-- Auth Overlay -->
     <div id="auth-overlay" class="auth-overlay">
         <div class="auth-container">
             <div id="register-form">
@@ -875,13 +874,11 @@
     </div>
 
 
-    <!-- Progress Page Overlay -->
-        <div id="progress-overlay" class="auth-overlay hidden">
+    <div id="progress-overlay" class="auth-overlay hidden">
             <div class="auth-container progress-page">
                 <h2 class="auth-title">Progress</h2>
                 <div style="color: rgba(255,255,255,0.6); text-align: center; margin-bottom: 30px;">Track your daily energy and achievements</div>
                 
-                <!-- Energy Balance Section -->
                 <div class="progress-section">
                     <div class="energy-balance-header">
                         <div class="energy-balance-main" id="progress-energy-balance">1300 / 2100</div>
@@ -900,13 +897,11 @@
                     </div>
                 </div>
 
-                <!-- Macro Breakdown Section -->
                 <div class="progress-section">
                     <h3 style="color: white; font-size: 18px; font-weight: 600; margin-bottom: 8px;">What's in your Fuel?</h3>
                     <div style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 15px;">Track your macro nutrients for optimal health</div>
                     
                     <div class="macro-grid">
-                        <!-- Protein -->
                         <div class="macro-item">
                             <div class="macro-info">
                                 <div class="macro-name">Protein</div>
@@ -929,7 +924,6 @@
                             </div>
                         </div>
 
-                        <!-- Carbs -->
                         <div class="macro-item">
                             <div class="macro-info">
                                 <div class="macro-name">Carbs</div>
@@ -952,7 +946,6 @@
                             </div>
                         </div>
 
-                        <!-- Fats -->
                         <div class="macro-item">
                             <div class="macro-info">
                                 <div class="macro-name">Fats</div>
@@ -981,7 +974,6 @@
                     </button>
                 </div>
 
-                <!-- Exercise Section -->
                 <div class="progress-section">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <div>
@@ -1034,7 +1026,6 @@
                     </button>
                 </div>
 
-                <!-- Streak Section -->
                 <div class="progress-section">
                     <div class="streak-container">
                         <h3 style="color: white; font-size: 18px; font-weight: 600; margin-bottom: 8px;">Streak</h3>
@@ -1114,16 +1105,13 @@
                     </div>
                 </div>
 
-                <!-- Back Button -->
                 <button class="auth-button secondary" id="back-to-app-from-progress" style="margin-top: 20px;">Back to App</button>
             </div>
         </div>
-    <!-- Profile Page Overlay -->
-        <div id="profile-overlay" class="auth-overlay hidden">
+    <div id="profile-overlay" class="auth-overlay hidden">
             <div class="auth-container">
                 <h2 class="auth-title">Profile Settings</h2>
                 
-                <!-- Personal Information Section -->
                 <div class="profile-section">
                     <h3 class="section-title">Personal Information</h3>
                     <div class="profile-avatar">
@@ -1137,7 +1125,6 @@
                     </div>
                 </div>
                 
-                <!-- Fitness Profile Section -->
                 <div class="profile-section">
                     <h3 class="section-title">Fitness Profile</h3>
                     <div class="profile-stats-grid">
@@ -1164,7 +1151,6 @@
                     </div>
                 </div>
                 
-                <!-- Action Buttons -->
                 <div class="profile-actions">
                     <button class="auth-button secondary" id="back-to-app">Back to App</button>
                     <button class="auth-button danger" id="logout-btn">Logout</button>
@@ -1172,15 +1158,12 @@
             </div>
         </div>
 
-    <!-- Main App -->
     <div id="app-container" class="hidden">
-        <!-- Camera Background -->
         <div class="camera-container">
             <video id="video" autoplay playsinline muted></video>
             <canvas id="canvas"></canvas>
         </div>
         
-        <!-- Top Overlay -->
         <div class="overlay top-overlay">
             <div class="status-bar">
                 <div class="time" id="current-time">10:26</div>
@@ -1197,9 +1180,7 @@
             </div>
         </div>
         
-        <!-- Bottom Overlay -->
         <div class="overlay bottom-overlay">
-            <!-- Info Card (Dynamic Content) -->
             <div class="info-card" id="info-card">
                 <div class="card-title" id="card-title">
                     Ready to Track
@@ -1209,18 +1190,15 @@
                 </div>
             </div>
             
-            <!-- Voice Button -->
             <div class="voice-button" id="voice-btn">
                 🎤
             </div>
             
-            <!-- Bottom Navigation -->
             <div class="bottom-nav">
-                <div class="nav-item active" data-tab="progress">
-                    <div class="nav-icon">📊</div>
+                <div class="nav-item" data-tab="progress"> <div class="nav-icon">📊</div>
                     <div>Progress</div>
                 </div>
-                <div class="nav-item" data-tab="coach">
+                <div class="nav-item active" data-tab="coach">
                     <div class="nav-icon">💪</div>
                     <div>Coach</div>
                 </div>
@@ -1264,7 +1242,6 @@
             updateTime();
             setInterval(updateTime, 1000);
             
-            // Check for existing login
             const storedUser = localStorage.getItem('fitness-app-user');
             if (storedUser) {
                 startApp(storedUser);
@@ -1318,11 +1295,10 @@
             
             // Progress page buttons
             document.getElementById('back-to-app-from-progress').addEventListener('click', hideProgressPage);
-
-            // Add listeners for Log Meal and Log Workout buttons (we'll add these after DOM loads)
+            
             setTimeout(() => {
-                const logMealBtn = document.querySelector('.progress-section:nth-child(3) .auth-button');
-                const logWorkoutBtn = document.querySelector('.progress-section:nth-child(4) .auth-button');
+                const logMealBtn = document.querySelector('#progress-overlay .progress-section:nth-of-type(2) .auth-button');
+                const logWorkoutBtn = document.querySelector('#progress-overlay .progress-section:nth-of-type(3) .auth-button');
                 
                 if (logMealBtn) {
                     logMealBtn.addEventListener('click', handleLogMealFromProgress);
@@ -1330,7 +1306,7 @@
                 if (logWorkoutBtn) {
                     logWorkoutBtn.addEventListener('click', handleLogWorkoutFromProgress);
                 }
-            }, 100);
+            }, 500);
         }
 
         function switchTab(tab) {
@@ -1339,57 +1315,47 @@
                 item.classList.toggle('active', item.dataset.tab === tab);
             });
             
-            // Handle different tabs
             if (tab === 'progress') {
                 showProgressPage();
             } else {
-                // Update card content for other tabs
+                hideProgressPage(false); // Hide progress but don't switch tab back
                 updateCardForTab(tab);
             }
         }
 
         function updateCardForTab(tab) {
             switch(tab) {
-                case 'progress':
-                    // This is now handled by showProgressPage()
-                    break;
                 case 'coach':
                     showCard('Ready to Track', 'Hold the mic button and say "analyze this food" or "log this food"');
                     break;
-                case 'planner+':
-                    showCard('Planner+', 'Coming soon - MCP powered meal planner, time scheduler, etc., to hit your goals');
+                case 'planner':
+                    showCard('Planner+', 'Coming soon - Meal planner, scheduler, and more to help you hit your goals.');
                     break;
             }
         }
 
         async function showProgressPage() {
-            console.log('Showing progress page...');
-            
-            // Show progress overlay
             document.getElementById('progress-overlay').classList.remove('hidden');
-            
-            // Load progress data
+            document.getElementById('app-container').classList.add('hidden');
             await loadProgressData();
         }
 
-        function hideProgressPage() {
+        function hideProgressPage(resetTab = true) {
             document.getElementById('progress-overlay').classList.add('hidden');
-            
-            // Reset to coach tab when going back
-            switchTab('coach');
+            document.getElementById('app-container').classList.remove('hidden');
+            if (resetTab) {
+                switchTab('coach');
+            }
         }
 
         async function loadProgressData() {
             if (!currentUser) return;
             
             try {
-                // Update time
                 const now = new Date();
-                const timeString = now.getHours().toString().padStart(2, '0') + ':' + 
-                                now.getMinutes().toString().padStart(2, '0');
+                const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 document.getElementById('progress-time').textContent = timeString;
                 
-                // Get summary data (we already have this endpoint)
                 const summaryResponse = await fetch(`${API_BASE}/summary`, {
                     headers: { 'X-Username': currentUser }
                 });
@@ -1397,223 +1363,76 @@
                 if (summaryResponse.ok) {
                     const summaryData = await summaryResponse.json();
                     
-                    // Update energy balance
                     document.getElementById('progress-energy-balance').textContent = 
                         `${summaryData.consumed_today} / ${summaryData.target_calories}`;
                     
                     const percentage = (summaryData.consumed_today / summaryData.target_calories) * 100;
                     document.getElementById('progress-energy-fill').style.width = Math.min(percentage, 100) + '%';
                     
-                    // Calculate typical progress based on time of day
                     const currentHour = now.getHours();
-                    const typicalPercentage = Math.min((currentHour / 24) * 100, 100);
-                    const typicalMarker = document.querySelector('.typical-marker');
-                    if (typicalMarker) {
-                        typicalMarker.style.left = typicalPercentage + '%';
-                    }
+                    const typicalPercentage = Math.min((currentHour / 22) * 100, 100); // Assume day ends at 10pm
+                    document.querySelector('.typical-marker').style.left = typicalPercentage + '%';
                 }
                 
-                // For now, we'll use mock data for macros and exercise since we don't have those endpoints yet
-                // In a real implementation, you'd fetch this data from additional endpoints
                 await updateMacroProgress();
-                await updateExerciseData();
-                await updateStreakData();
                 
             } catch (err) {
                 console.error('Failed to load progress data:', err);
-                // Show with existing mock data
             }
         }
 
         async function updateMacroProgress() {
-            // Mock macro data - in real implementation, this would come from your food logs
-            const macros = {
-                protein: { current: 85, target: 120, percentage: 71 },
-                carbs: { current: 180, target: 220, percentage: 82 },
-                fats: { current: 65, target: 80, percentage: 81 }
-            };
-            
-            // Update protein
-            const proteinCircle = document.querySelector('.macro-item:nth-child(1) .circular-progress-fill');
-            const proteinText = document.querySelector('.macro-item:nth-child(1) .circular-progress-text');
-            const proteinValues = document.querySelector('.macro-item:nth-child(1) .macro-values');
-            const proteinLinear = document.querySelector('.macro-item:nth-child(1) .linear-progress-fill');
-            
-            if (proteinCircle) {
-                const circumference = 2 * Math.PI * 20;
-                const strokeDasharray = `${(macros.protein.percentage / 100) * circumference} ${circumference}`;
-                proteinCircle.style.strokeDasharray = strokeDasharray;
-            }
-            if (proteinText) proteinText.textContent = macros.protein.percentage + '%';
-            if (proteinValues) proteinValues.textContent = `${macros.protein.current}g/${macros.protein.target}g`;
-            if (proteinLinear) proteinLinear.style.width = macros.protein.percentage + '%';
-            
-            // Similar updates for carbs and fats...
-            const carbsCircle = document.querySelector('.macro-item:nth-child(2) .circular-progress-fill');
-            const carbsText = document.querySelector('.macro-item:nth-child(2) .circular-progress-text');
-            const carbsValues = document.querySelector('.macro-item:nth-child(2) .macro-values');
-            const carbsLinear = document.querySelector('.macro-item:nth-child(2) .linear-progress-fill');
-            
-            if (carbsCircle) {
-                const circumference = 2 * Math.PI * 20;
-                const strokeDasharray = `${(macros.carbs.percentage / 100) * circumference} ${circumference}`;
-                carbsCircle.style.strokeDasharray = strokeDasharray;
-            }
-            if (carbsText) carbsText.textContent = macros.carbs.percentage + '%';
-            if (carbsValues) carbsValues.textContent = `${macros.carbs.current}g/${macros.carbs.target}g`;
-            if (carbsLinear) carbsLinear.style.width = macros.carbs.percentage + '%';
-            
-            const fatsCircle = document.querySelector('.macro-item:nth-child(3) .circular-progress-fill');
-            const fatsText = document.querySelector('.macro-item:nth-child(3) .circular-progress-text');
-            const fatsValues = document.querySelector('.macro-item:nth-child(3) .macro-values');
-            const fatsLinear = document.querySelector('.macro-item:nth-child(3) .linear-progress-fill');
-            
-            if (fatsCircle) {
-                const circumference = 2 * Math.PI * 20;
-                const strokeDasharray = `${(macros.fats.percentage / 100) * circumference} ${circumference}`;
-                fatsCircle.style.strokeDasharray = strokeDasharray;
-            }
-            if (fatsText) fatsText.textContent = macros.fats.percentage + '%';
-            if (fatsValues) fatsValues.textContent = `${macros.fats.current}g/${macros.fats.target}g`;
-            if (fatsLinear) fatsLinear.style.width = macros.fats.percentage + '%';
-        }
+            try {
+                const response = await fetch(`${API_BASE}/macro_summary`, {
+                    headers: { 'X-Username': currentUser }
+                });
 
-        async function updateExerciseData() {
-            // Mock exercise data - in real implementation, this would come from exercise_logs table
-            // You could create a new endpoint like GET /exercise_summary
-            const exercises = [
-                {
-                    type: 'Running',
-                    icon: '🏃',
-                    duration: '30 min',
-                    distance: '3.2 miles',
-                    calories: 350,
-                    isPR: true
-                },
-                {
-                    type: 'Strength Training',
-                    icon: '💪',
-                    duration: '45 min',
-                    calories: 200,
-                    isPR: false
+                if (!response.ok) {
+                    console.error('Failed to fetch macro summary');
+                    return;
                 }
-            ];
-            
-            // Update total calories burned
-            const totalCalories = exercises.reduce((sum, ex) => sum + ex.calories, 0);
-            const caloriesElement = document.querySelector('.progress-section:nth-child(4) .exercise-calories');
-            if (caloriesElement) {
-                caloriesElement.textContent = `⚡ ${totalCalories} Cal`;
+
+                const macros = await response.json();
+                const circumference = 2 * Math.PI * 20;
+
+                const updateMacroUI = (macroName, data) => {
+                    const circle = document.querySelector(`.macro-item:nth-child(${macroName === 'protein' ? 1 : macroName === 'carbs' ? 2 : 3}) .circular-progress-fill`);
+                    const text = document.querySelector(`.macro-item:nth-child(${macroName === 'protein' ? 1 : macroName === 'carbs' ? 2 : 3}) .circular-progress-text`);
+                    const values = document.querySelector(`.macro-item:nth-child(${macroName === 'protein' ? 1 : macroName === 'carbs' ? 2 : 3}) .macro-values`);
+                    const linear = document.querySelector(`.macro-item:nth-child(${macroName === 'protein' ? 1 : macroName === 'carbs' ? 2 : 3}) .linear-progress-fill`);
+
+                    if (circle) circle.style.strokeDasharray = `${(data.percentage / 100) * circumference} ${circumference}`;
+                    if (text) text.textContent = data.percentage + '%';
+                    if (values) values.textContent = `${data.current}g/${data.target}g`;
+                    if (linear) linear.style.width = data.percentage + '%';
+                };
+
+                updateMacroUI('protein', macros.protein);
+                updateMacroUI('carbs', macros.carbs);
+                updateMacroUI('fats', macros.fats);
+
+            } catch (err) {
+                console.error('Error updating macro progress:', err);
             }
         }
 
-        async function updateStreakData() {
-            // Mock streak data - in real implementation, you'd calculate this from user_logs
-            // You could create an endpoint like GET /streak_data
-            const today = new Date();
-            const currentStreak = 5;
-            const bestStreak = 12;
-            const monthProgress = 27;
-            const monthTotal = 31;
-            
-            // Update streak numbers
-            const streakElement = document.querySelector('.current-streak');
-            if (streakElement) {
-                streakElement.textContent = `${currentStreak} days`;
-            }
-            
-            // Update month progress
-            const monthElement = document.querySelector('.progress-section:last-child [style*="color: #06b6d4"]');
-            if (monthElement) {
-                monthElement.textContent = `${monthProgress}/${monthTotal} days`;
-            }
-            
-            // Update fire icons based on current streak
-            const fireIcons = document.querySelectorAll('.fire-icon');
-            fireIcons.forEach((icon, index) => {
-                if (index < currentStreak) {
-                    icon.classList.remove('inactive');
-                    icon.classList.add('active');
-                } else {
-                    icon.classList.remove('active');
-                    icon.classList.add('inactive');
-                }
-            });
-            
-            // Update calendar - mark today
-            const calendarDays = document.querySelectorAll('.calendar-day');
-            const todayDate = today.getDate();
-            calendarDays.forEach(day => {
-                const dayNumber = parseInt(day.textContent);
-                if (dayNumber === todayDate) {
-                    day.classList.add('today');
-                }
-            });
-        }
-
-        // Handle Log Meal button from progress page
         function handleLogMealFromProgress() {
             hideProgressPage();
             showCard('Ready to Log Food', 'Hold the mic button and say "log this food" while pointing at your meal');
         }
 
-        // Handle Log Workout button from progress page
         function handleLogWorkoutFromProgress() {
             hideProgressPage();
             showCard('Ready to Log Workout', 'Hold the mic button and say "start my run" or "going for a workout"');
         }
 
-        function hideProfile() {
-            profileOverlay.classList.add('hidden');
-        }
-
-        function handleLogout() {
-            console.log('Logging out user:', currentUser);
-            
-            localStorage.removeItem('fitness-app-user');
-            currentUser = null;
-            lastAnalysisResult = null;
-            
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-            }
-            
-            // Hide all overlays and show auth
-            profileOverlay.classList.add('hidden');
-            authOverlay.classList.remove('hidden');
-            appContainer.classList.add('hidden');
-            
-            // Reset forms
-            document.getElementById('login-username').value = '';
-            document.getElementById('register-form').classList.add('hidden');
-            document.getElementById('login-form').classList.remove('hidden');
-        }
-
-        function updateCardForTab(tab) {
-            switch(tab) {
-                case 'progress':
-                    showCard('Progress tab', 'Coming soon - Check your progress over time');
-                    break;
-                case 'coach':
-                    showCard('Ready to Track', 'Hold the mic button and say "analyze this food" or "log this food"');
-                    break;
-                case 'planner':
-                    showCard('Planner+', 'Coming soon - MCP powered meal planner, time scheduler, etc., to hit your goals');
-                    break;
-            }
-        }
-
-
         function showCard(title, content, isFood = false) {
-            cardTitle.textContent = title;
-            
+            cardTitle.innerHTML = title;
             if (isFood) {
-                cardContent.innerHTML = content; // Allow HTML for nutrition grid
+                cardContent.innerHTML = content;
             } else {
                 cardContent.textContent = content;
             }
-            
             infoCard.classList.add('visible');
         }
 
@@ -1628,7 +1447,6 @@
             authOverlay.classList.add('hidden');
             appContainer.classList.remove('hidden');
             
-            // Initialize to coach tab (middle button)
             switchTab('coach');
             
             await initCamera();
@@ -1671,9 +1489,8 @@
             }
         }
 
-        // Voice recording functions
         async function startRecording() {
-            if (isRecording) return;
+            if (isRecording || !stream) return;
             try {
                 audioChunks = [];
                 mediaRecorder = new MediaRecorder(stream);
@@ -1726,7 +1543,7 @@
 
         async function logFoodDirect() {
             try {
-                showCard('Analyzing...', 'Taking photo and analyzing food');
+                showCard('Analyzing & Logging...', 'Taking photo and analyzing food');
                 const photoBlob = await takePhoto();
                 
                 const formData = new FormData();
@@ -1780,11 +1597,11 @@
                         <div class="nutrition-label">calories</div>
                     </div>
                     <div class="nutrition-item">
-                        <div class="nutrition-value">25g</div>
+                        <div class="nutrition-value">--g</div>
                         <div class="nutrition-label">protein</div>
                     </div>
                     <div class="nutrition-item">
-                        <div class="nutrition-value">30g</div>
+                        <div class="nutrition-value">--g</div>
                         <div class="nutrition-label">carbs</div>
                     </div>
                 </div>
@@ -1801,7 +1618,7 @@
             }
             
             try {
-                const response = await fetch(`${API_BASE}/log_previous`, {
+                await fetch(`${API_BASE}/log_previous`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1823,17 +1640,15 @@
         }
 
         function takePhoto() {
-            const context = canvas.getContext('2d');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            context.drawImage(video, 0, 0);
-            
             return new Promise((resolve) => {
+                const context = canvas.getContext('2d');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
                 canvas.toBlob(resolve, 'image/jpeg', 0.8);
             });
         }
 
-        // Auth functions (simplified versions of your existing code)
         async function handleRegister() {
             const username = document.getElementById('reg-username').value.toLowerCase().trim();
             const age = document.getElementById('reg-age').value;
@@ -1888,77 +1703,18 @@
                     const result = await response.json();
                     startApp(result.username);
                 } else {
-                    alert('Login failed.');
+                    alert('Login failed: User not found.');
                 }
             } catch(err) {
                 alert('Login error occurred.');
             }
         }
 
-        async function showProfile() {
-            if (!currentUser) return;
-            
-            showingProfile = true;
-            profileOverlay.classList.remove('hidden');
-            
-            // Load profile data
-            await loadProfileData();
-        }
-
         function hideProfile() {
-            showingProfile = false;
             profileOverlay.classList.add('hidden');
-        }
-
-        async function loadProfileData() {
-            try {
-                // For now, we'll use the summary endpoint to get some user data
-                // and fill in placeholder data for the rest
-                const response = await fetch(`${API_BASE}/summary`, {
-                    headers: { 'X-Username': currentUser }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    document.getElementById('profile-username').textContent = currentUser;
-                    document.getElementById('profile-email').textContent = `${currentUser}@example.com`;
-                    document.getElementById('profile-goal').textContent = data.goal?.replace('_', ' ') || 'maintain';
-                    
-                    // We'll need the actual profile endpoint for age, height, weight
-                    document.getElementById('profile-age').textContent = '--';
-                    document.getElementById('profile-height').textContent = '--';
-                    document.getElementById('profile-weight').textContent = '--';
-                } else {
-                    // Handle error - maybe show placeholder data
-                    document.getElementById('profile-username').textContent = currentUser;
-                    document.getElementById('profile-email').textContent = `${currentUser}@example.com`;
-                }
-            } catch (err) {
-                console.error('Failed to load profile data:', err);
-                // Show placeholder data
-                document.getElementById('profile-username').textContent = currentUser;
-                document.getElementById('profile-email').textContent = `${currentUser}@example.com`;
-            }
-        }
-
-        function handleProfileLogout() {
-            // Reuse existing logout logic
-            localStorage.removeItem('fitness-app-user');
-            currentUser = null;
-            showingProfile = false;
-            
-            authOverlay.classList.remove('hidden');
-            appContainer.classList.add('hidden');
-            profileOverlay.classList.add('hidden');
-            
-            if(stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
         }
 
         function handleLogout() {
-            console.log('Logging out user:', currentUser);
-            
             localStorage.removeItem('fitness-app-user');
             currentUser = null;
             lastAnalysisResult = null;
@@ -1968,62 +1724,47 @@
                 stream = null;
             }
             
-            // Hide profile and app, show auth immediately
             profileOverlay.classList.add('hidden');
             appContainer.classList.add('hidden');
             authOverlay.classList.remove('hidden');
             
-            // Reset forms and show login
             document.getElementById('login-username').value = '';
-            document.getElementById('register-form').classList.add('hidden');
-            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('register-form').classList.remove('hidden');
+            document.getElementById('login-form').classList.add('hidden');
         }
 
         async function showProfile() {
             if (!currentUser) return;
             
-            console.log('Profile icon clicked, showing profile page...');
-            
             try {
-                // Show profile overlay
                 profileOverlay.classList.remove('hidden');
                 
-                // Fetch and populate profile data
                 const response = await fetch(`${API_BASE}/profile`, {
                     headers: { 'X-Username': currentUser }
                 });
                 
                 if (response.ok) {
                     const profileData = await response.json();
-                    console.log('Profile data received:', profileData);
                     
-                    // Populate profile fields
                     document.getElementById('profile-username').textContent = profileData.username;
-                    document.getElementById('profile-email').textContent = `${profileData.username}@example.com`;
+                    document.getElementById('profile-email').textContent = `${profileData.username}@app.dev`;
                     document.getElementById('profile-age').textContent = profileData.age;
                     document.getElementById('profile-sex').textContent = profileData.sex;
                     document.getElementById('profile-height').textContent = `${profileData.height_cm} cm`;
                     document.getElementById('profile-weight').textContent = `${profileData.weight_kg} kg`;
                     document.getElementById('profile-goal').textContent = profileData.goal.replace('_', ' ');
-                    
-                    
-                    // Set avatar initial
                     document.getElementById('avatar-initial').textContent = profileData.username.charAt(0).toUpperCase();
                 } else {
-                    console.error('Failed to fetch profile:', response.status);
-                    // Show with placeholder data
                     document.getElementById('profile-username').textContent = currentUser;
                     document.getElementById('avatar-initial').textContent = currentUser.charAt(0).toUpperCase();
                 }
             } catch (err) {
                 console.error('Profile fetch error:', err);
-                // Show with placeholder data
                 document.getElementById('profile-username').textContent = currentUser;
                 document.getElementById('avatar-initial').textContent = currentUser.charAt(0).toUpperCase();
             }
         }
 
-        // Initialize when DOM is ready
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
