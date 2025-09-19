@@ -1187,6 +1187,7 @@
         let lastAnalysisResult = null;
         let currentUser = null;
         let currentTab = 'coach';
+        let currentExerciseSessionId = null;
 
         // DOM elements
         const authOverlay = document.getElementById('auth-overlay');
@@ -1203,7 +1204,8 @@
         const progressFill = document.getElementById('progress-fill');
 
         // API config
-        const API_BASE = 'https://athyra.onrender.com';
+        //const API_BASE = 'https://athyra.onrender.com';
+        const API_BASE = 'http://127.0.0.1:8000';
 
         // Initialize app
         function init() {
@@ -1553,8 +1555,10 @@
                     case 'analyze_food': await analyzeFood(); break;
                     case 'log_previous': await logPreviousItem(); break;
                     case 'get_summary': await updateCalorieProgress(); break;
+                    case 'start_exercise': await startExercise(); break;
+                    case 'stop_exercise': await stopExercise(); break;
                     default: 
-                        showCard('Not Understood', result.message || "I didn't understand that. Try saying 'analyze this food' or 'log this food'");
+                        showCard('Not Understood', result.message || "I didn't understand that. Try saying 'analyze this food' or 'track my run'");
                 }
             } catch (err) {
                 showCard('Processing Error', 'Voice processing failed. Please try again.');
@@ -1782,6 +1786,53 @@
                 console.error('Profile fetch error:', err);
                 document.getElementById('profile-username').textContent = currentUser;
                 document.getElementById('avatar-initial').textContent = currentUser.charAt(0).toUpperCase();
+            }
+        }
+
+        async function startExercise() {
+            if (currentExerciseSessionId) {
+                showCard('Workout in Progress', 'You are already in a workout session. Say "stop exercise" to end it.');
+                return;
+            }
+            try {
+                const response = await fetch(`${API_BASE}/exercise`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Username': currentUser
+                    },
+                    body: JSON.stringify({ action: 'start', exercise_type: 'running' }) // Defaulting to running for now
+                });
+                const result = await response.json();
+                if (result.session_id) {
+                    currentExerciseSessionId = result.session_id;
+                    showCard('🏃 Workout Started!', 'Your session has begun. Say "stop exercise" when you are finished.');
+                }
+            } catch (err) {
+                showCard('Error', 'Could not start workout.');
+            }
+        }
+
+        async function stopExercise() {
+            if (!currentExerciseSessionId) {
+                showCard('No Workout Active', 'You are not in an active workout session.');
+                return;
+            }
+            try {
+                const response = await fetch(`${API_BASE}/exercise`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Username': currentUser
+                    },
+                    body: JSON.stringify({ action: 'stop', session_id: currentExerciseSessionId })
+                });
+                const result = await response.json();
+                showCard('🏆 Workout Complete!', `Great job! You burned an estimated ${result.calories_burned} calories.`);
+                currentExerciseSessionId = null; // Reset for the next workout
+                await updateCalorieProgress(); // Refresh the UI
+            } catch (err) {
+                showCard('Error', 'Could not stop workout.');
             }
         }
 

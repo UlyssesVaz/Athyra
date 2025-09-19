@@ -144,9 +144,9 @@ async def voice_command(audio: UploadFile = File(...)):
             - "log_previous": User wants to save the last analyzed item (requires prior analysis)
             Examples: "log it", "save it", "log that", "yes lets add that", "confirm", "add it to my log"
             - "start_exercise": Exercise related
-            Examples: "going for a run", "starting workout", "exercise time", "start my run", "begin workout"
+            Examples: "going for a run", "starting workout", "exercise time", "start my run", "begin workout", "track my run"
              - "stop_exercise": User wants to end their current workout  
-            Examples: "stop my run", "end workout", "I'm done exercising" 
+            Examples: "stop my run", "end workout", "I'm done exercising", "finish time"
             - "get_summary": Summary requests
             Examples: "how am I doing", "daily summary", "my calories", "show my progress"
             - "clarify": Ambiguous commands that need clarification depending on context 
@@ -156,7 +156,8 @@ async def voice_command(audio: UploadFile = File(...)):
             1. Always assume "this" refers to the current food being viewed unless explicitly stated as "it/that".
             2. "log it/save it/log that" = log_previous (refers to something already analyzed)
             3. "log this/save this/track this" = log_food (refers to current view)
-            4. Return confidence: "high" (>90% sure), "medium" (70-90%), "low" (<70%)
+            4. Any mention of physical activity like running, workouts, or exercising should be classified as "start_exercise" or "stop_exercise".
+            5. Return confidence: "high" (>90% sure), "medium" (70-90%), "low" (<70%)
 
             Response format: {"action": "...", "confidence": "high|medium|low"}
         """
