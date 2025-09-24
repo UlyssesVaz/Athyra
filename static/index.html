@@ -80,6 +80,7 @@
             border-radius: 50%;
             background: rgba(255,255,255,0.2);
             border: 2px solid rgba(255,255,255,0.3);
+            cursor: pointer;
         }
         
         /* Calorie progress bar */
@@ -819,11 +820,300 @@
             font-size: 14px;
             line-height: 1.4;
             margin-top: 15px;
+        }   
+
+        /* Planner page specific styles */
+        .planner-features {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
+        .planner-feature-card {
+            display: flex;
+            align-items: center;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .planner-feature-card.available:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .planner-feature-card.coming-soon {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .feature-icon {
+            font-size: 32px;
+            margin-right: 20px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+        }
+
+        .feature-content {
+            flex: 1;
+        }
+
+        .feature-content h3 {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .feature-content p {
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .feature-status {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .planner-feature-card.coming-soon .feature-status {
+            background: rgba(156, 163, 175, 0.2);
+            color: #9ca3af;
+        }
+
+        /* Mindful UI Components */
+        .planner-flow-step {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        .planner-flow-step.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .mindful-content {
+            display: flex;
+            flex-direction: column;
+            min-height: 70vh;
+            padding: 20px 0;
+        }
+
+        .mindful-title {
+            font-size: 28px;
+            font-weight: 500;
+            color: white;
+            text-align: center;
+            margin-bottom: 16px;
+            line-height: 1.3;
+        }
+
+        .mindful-subtitle {
+            font-size: 16px;
+            color: rgba(255,255,255,0.7);
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .mindful-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 16px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            margin-bottom: 16px;
+        }
+
+        .mindful-input:focus {
+            outline: none;
+            border-color: rgba(74, 222, 128, 0.4);
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.02);
+        }
+
+        .mindful-input::placeholder {
+            color: rgba(255,255,255,0.5);
+            font-style: italic;
+        }
+
+        .mindful-label {
+            display: block;
+            color: rgba(255,255,255,0.8);
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .gentle-note {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            line-height: 1.4;
+            margin-top: 16px;
+        }
+
+        /* Reflection Screen Styles */
+        .deep-reflection {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .thinking-indicator {
+            margin-top: 40px;
+        }
+
+        .thinking-dots {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .thinking-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            animation: thinking 1.4s infinite ease-in-out;
+        }
+
+        .thinking-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .thinking-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes thinking {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        .wellness-score {
+            text-align: center;
+            margin: 24px 0;
+        }
+
+        .score-circle {
+            display: inline-block;
+            padding: 32px;
+            background: rgba(74, 222, 128, 0.1);
+            border-radius: 50%;
+            border: 3px solid rgba(74, 222, 128, 0.3);
+            opacity: 0;
+            animation: fadeInScale 0.8s ease-out 0.5s forwards;
+        }
+
+        .score-value {
+            font-size: 48px;
+            font-weight: 300;
+            color: #4ade80;
+            margin-bottom: 8px;
+        }
+
+        .score-label {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .meal-preview {
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .preview-day {
+            margin-bottom: 16px;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+
+        .preview-day h4 {
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .preview-meal {
+            font-size: 12px;
+            color: rgba(255,255,255,0.8);
+            margin: 4px 0;
+            line-height: 1.3;
+        }
+
+        .mindful-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 32px;
+        }
+
+        .mindful-nav-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .mindful-nav-button:hover {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .mindful-nav-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        /* Animations */
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- AUTHENTICATION OVERLAY -->
     <div id="auth-overlay" class="auth-overlay">
         <div class="auth-container">
             <div id="register-form">
@@ -873,7 +1163,7 @@
         </div>
     </div>
 
-
+    <!-- PROGRESS PAGE OVERLAY -->
     <div id="progress-overlay" class="auth-overlay hidden">
             <div class="auth-container progress-page">
                 <h2 class="auth-title">Progress</h2>
@@ -1034,37 +1324,7 @@
                             <div class="calendar-header">S</div>
                             <div class="calendar-header">S</div>
                             
-                            <div class="calendar-day completed">1</div>
-                            <div class="calendar-day completed">2</div>
-                            <div class="calendar-day completed">3</div>
-                            <div class="calendar-day completed">4</div>
-                            <div class="calendar-day completed">5</div>
-                            <div class="calendar-day completed">6</div>
-                            <div class="calendar-day completed">7</div>
-                            <div class="calendar-day completed">8</div>
-                            <div class="calendar-day completed">9</div>
-                            <div class="calendar-day completed">10</div>
-                            <div class="calendar-day completed">11</div>
-                            <div class="calendar-day completed">12</div>
-                            <div class="calendar-day completed">13</div>
-                            <div class="calendar-day incomplete">14</div>
-                            <div class="calendar-day completed">15</div>
-                            <div class="calendar-day incomplete">16</div>
-                            <div class="calendar-day completed">17</div>
-                            <div class="calendar-day today completed">18</div>
-                            <div class="calendar-day completed">19</div>
-                            <div class="calendar-day completed">20</div>
-                            <div class="calendar-day completed">21</div>
-                            <div class="calendar-day completed">22</div>
-                            <div class="calendar-day completed">23</div>
-                            <div class="calendar-day completed">24</div>
-                            <div class="calendar-day completed">25</div>
-                            <div class="calendar-day completed">26</div>
-                            <div class="calendar-day incomplete">27</div>
-                            <div class="calendar-day completed">28</div>
-                            <div class="calendar-day incomplete">29</div>
-                            <div class="calendar-day completed">30</div>
-                            <div class="calendar-day completed">31</div>
+                            <div class="calendar-day completed">1</div><div class="calendar-day completed">2</div><div class="calendar-day completed">3</div><div class="calendar-day completed">4</div><div class="calendar-day completed">5</div><div class="calendar-day completed">6</div><div class="calendar-day completed">7</div><div class="calendar-day completed">8</div><div class="calendar-day completed">9</div><div class="calendar-day completed">10</div><div class="calendar-day completed">11</div><div class="calendar-day completed">12</div><div class="calendar-day completed">13</div><div class="calendar-day incomplete">14</div><div class="calendar-day completed">15</div><div class="calendar-day incomplete">16</div><div class="calendar-day completed">17</div><div class="calendar-day today completed">18</div><div class="calendar-day completed">19</div><div class="calendar-day completed">20</div><div class="calendar-day completed">21</div><div class="calendar-day completed">22</div><div class="calendar-day completed">23</div><div class="calendar-day completed">24</div><div class="calendar-day completed">25</div><div class="calendar-day completed">26</div><div class="calendar-day incomplete">27</div><div class="calendar-day completed">28</div><div class="calendar-day incomplete">29</div><div class="calendar-day completed">30</div><div class="calendar-day completed">31</div>
                         </div>
 
                         <div class="motivation-quote">
@@ -1076,6 +1336,129 @@
                 <button class="auth-button secondary" id="back-to-app-from-progress" style="margin-top: 20px;">Back to App</button>
             </div>
         </div>
+
+     <!-- PLANNER+ PAGE OVERLAY (New Integrated Section) -->
+     <div id="planner-page-overlay" class="auth-overlay hidden">
+        <div class="auth-container progress-page">
+            
+            <!-- Step 1: Main Planner Hub -->
+            <div id="planner-main" class="planner-flow-step">
+                <h2 class="auth-title">Planner+</h2>
+                <div class="planner-features">
+                    <div class="planner-feature-card available" id="show-meal-planner-card">
+                        <div class="feature-icon">🥗</div>
+                        <div class="feature-content">
+                            <h3>Mindful Meal Planner</h3>
+                            <p>Generate a personalized weekly meal plan based on your goals and budget.</p>
+                        </div>
+                        <div class="feature-status">Available</div>
+                    </div>
+                    <div class="planner-feature-card coming-soon">
+                        <div class="feature-icon">🏋️</div>
+                        <div class="feature-content">
+                            <h3>Workout Scheduler</h3>
+                            <p>Plan your weekly workouts and track your progress against your goals.</p>
+                        </div>
+                        <div class="feature-status">Coming Soon</div>
+                    </div>
+                </div>
+                 <button class="auth-button secondary" id="back-to-app-from-planner">Back to App</button>
+            </div>
+
+            <!-- Step 2: Meal Plan Options (Create or View) -->
+            <div id="meal-plan-hub" class="planner-flow-step">
+                <h2 class="auth-title">Mindful Meal Planner</h2>
+                <div style="color: rgba(255,255,255,0.6); text-align: center; margin-bottom: 30px;">
+                    Build a personalized weekly meal plan or review plans you've already made.
+                </div>
+                <div style="display: grid; gap: 12px;">
+                    <button class="auth-button" style="background: linear-gradient(90deg, #4ade80, #22c55e);" id="create-new-plan-btn">
+                        ➕ Create New Plan
+                    </button>
+                    <button class="auth-button secondary" id="view-saved-plans-btn">
+                        📂 View Saved Plans
+                    </button>
+                    <button class="auth-button secondary" id="back-to-planner-main-btn">Back</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Gallery of Saved Plans -->
+            <div id="meal-plan-gallery" class="planner-flow-step">
+                <h2 class="auth-title">Saved Meal Plans</h2>
+                <div id="gallery-container" style="display: grid; gap: 15px; margin-bottom: 20px;">
+                    <!-- Saved plans will be dynamically inserted here -->
+                </div>
+                <button class="auth-button secondary" id="back-to-hub-from-gallery-btn">Back</button>
+            </div>
+            
+            <!-- Meal Plan Creation Wizard -->
+            <div id="meal-plan-wizard" class="planner-flow-step">
+                <div class="mindful-content">
+                    <!-- Wizard Step: Welcome -->
+                    <div id="meal-plan-welcome" class="planner-flow-step">
+                        <h2 class="mindful-title">Let's craft a meal plan that nourishes you.</h2>
+                        <p class="mindful-subtitle">We'll guide you through a few gentle steps.</p>
+                    </div>
+                    <!-- Wizard Step: Budget -->
+                    <div id="meal-plan-budget" class="planner-flow-step">
+                        <h2 class="mindful-title">What's your weekly food budget?</h2>
+                        <p class="mindful-subtitle">This helps us find affordable, delicious options for you.</p>
+                        <div>
+                            <label for="mindful-budget-input" class="mindful-label">Budget in USD ($)</label>
+                            <input type="number" id="mindful-budget-input" class="mindful-input" value="100">
+                        </div>
+                        <p class="gentle-note">A little planning can lead to big savings and better health.</p>
+                    </div>
+                    <!-- Wizard Step: Dietary Needs -->
+                    <div id="meal-plan-dietary" class="planner-flow-step">
+                        <h2 class="mindful-title">Any allergies or restrictions?</h2>
+                        <p class="mindful-subtitle">List anything you need to avoid, separated by commas.</p>
+                        <div>
+                             <label for="mindful-allergies-input" class="mindful-label">Allergies or Dislikes</label>
+                            <input type="text" id="mindful-allergies-input" class="mindful-input" placeholder="e.g., peanuts, dairy, shellfish">
+                        </div>
+                        <p class="gentle-note">Your safety and enjoyment are our top priorities.</p>
+                    </div>
+                     <!-- Wizard Step: Reflection/Loading -->
+                    <div id="meal-plan-reflection" class="planner-flow-step">
+                        <div class="deep-reflection">
+                            <h2 class="mindful-title">A moment of mindfulness...</h2>
+                            <p class="mindful-subtitle">While our AI agents create your plan, take a deep breath.</p>
+                            <div class="thinking-indicator">
+                                <div class="thinking-dots"><span></span><span></span><span></span></div>
+                                <p class="gentle-note">Considering your preferences, goals, and well-being...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Wizard Step: Results -->
+                    <div id="meal-plan-results" class="planner-flow-step">
+                        <h2 class="mindful-title">Your Mindful Plan is Ready</h2>
+                        <p class="mindful-subtitle">Here’s a glimpse of what we’ve prepared for you.</p>
+                        <div class="wellness-score">
+                            <div class="score-circle">
+                                <div class="score-value" id="mindful-health-score">--</div>
+                                <div class="score-label">Health Score</div>
+                            </div>
+                        </div>
+                        <div class="meal-preview" id="mindful-meal-preview"></div>
+                        <div style="margin-top: 30px; display: grid; gap: 12px;">
+                            <button class="auth-button" style="background: linear-gradient(90deg, #06b6d4, #0891b2);" id="shop-ingredients-btn">🛒 Shop Ingredients</button>
+                            <button class="auth-button secondary" id="restart-plan-btn">Restart Plan</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Universal Wizard Navigation -->
+                    <div class="mindful-navigation">
+                        <button id="mindful-back-button" class="mindful-nav-button">Back</button>
+                        <button id="mindful-next-button" class="mindful-nav-button">Next</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- PROFILE PAGE OVERLAY -->
     <div id="profile-overlay" class="auth-overlay hidden">
             <div class="auth-container">
                 <h2 class="auth-title">Profile Settings</h2>
@@ -1126,6 +1509,7 @@
             </div>
         </div>
 
+    <!-- MAIN APP INTERFACE -->
     <div id="app-container" class="hidden">
         <div class="camera-container">
             <video id="video" autoplay playsinline muted></video>
@@ -1179,7 +1563,7 @@
     </div>
 
     <script>
-        // Global state
+        // --- GLOBAL STATE ---
         let mediaRecorder;
         let audioChunks = [];
         let isRecording = false;
@@ -1189,9 +1573,16 @@
         let currentTab = 'coach';
         let currentExerciseSessionId = null;
 
-        // DOM elements
+        // --- PLANNER STATE ---
+        let currentMealPlan = null;
+        let currentMealPlanStep = 0;
+        const MEAL_PLAN_WIZARD_STEPS = ['welcome', 'budget', 'dietary', 'reflection', 'results'];
+
+        // --- DOM ELEMENTS ---
         const authOverlay = document.getElementById('auth-overlay');
         const profileOverlay = document.getElementById('profile-overlay');
+        const progressOverlay = document.getElementById('progress-overlay');
+        const plannerOverlay = document.getElementById('planner-page-overlay');
         const appContainer = document.getElementById('app-container');
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
@@ -1203,11 +1594,11 @@
         const calorieNumbers = document.getElementById('calorie-numbers');
         const progressFill = document.getElementById('progress-fill');
 
-        // API config
-        const API_BASE = 'https://athyra.onrender.com';
-        //const API_BASE = 'http://127.0.0.1:8000';
+        // --- API CONFIG ---
+        const API_BASE = 'http://127.0.0.1:8000'; // Use this for local testing
+        // const API_BASE = 'https://athyra.onrender.com'; // Use this for production
 
-        // Initialize app
+        // --- APP INITIALIZATION ---
         function init() {
             updateTime();
             setInterval(updateTime, 1000);
@@ -1234,7 +1625,6 @@
                 document.getElementById('register-form').classList.add('hidden');
                 document.getElementById('login-form').classList.remove('hidden');
             });
-
             document.getElementById('show-register').addEventListener('click', (e) => {
                 e.preventDefault();
                 document.getElementById('login-form').classList.add('hidden');
@@ -1246,49 +1636,63 @@
             document.getElementById('login-btn').addEventListener('click', handleLogin);
 
             // Voice button
-            voiceBtn.addEventListener('touchstart', startRecording, { passive: true });
-            voiceBtn.addEventListener('touchend', stopRecording);
             voiceBtn.addEventListener('mousedown', startRecording);
             voiceBtn.addEventListener('mouseup', stopRecording);
+            voiceBtn.addEventListener('touchstart', startRecording, { passive: true });
+            voiceBtn.addEventListener('touchend', stopRecording);
 
             // Navigation tabs
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.addEventListener('click', () => switchTab(item.dataset.tab));
             });
 
-            // Profile icon
+            // Profile management
             document.getElementById('profile-icon').addEventListener('click', showProfile);
-
-            // Profile page buttons
             document.getElementById('back-to-app').addEventListener('click', hideProfile);
             document.getElementById('logout-btn').addEventListener('click', handleLogout);
             
             // Progress page buttons
             document.getElementById('back-to-app-from-progress').addEventListener('click', hideProgressPage);
             
+            // Planner+ buttons
+            document.getElementById('back-to-app-from-planner').addEventListener('click', hidePlannerPage);
+            document.getElementById('show-meal-planner-card').addEventListener('click', () => showPlannerScreen('meal-plan-hub'));
+            document.getElementById('create-new-plan-btn').addEventListener('click', startMealPlanFlow);
+            document.getElementById('view-saved-plans-btn').addEventListener('click', showMealPlanGallery);
+            document.getElementById('back-to-planner-main-btn').addEventListener('click', () => showPlannerScreen('planner-main'));
+            document.getElementById('back-to-hub-from-gallery-btn').addEventListener('click', () => showPlannerScreen('meal-plan-hub'));
+            document.getElementById('mindful-back-button').addEventListener('click', previousMealPlanStep);
+            document.getElementById('mindful-next-button').addEventListener('click', nextMealPlanStep);
+            document.getElementById('shop-ingredients-btn').addEventListener('click', () => alert("Shopping list integration is coming soon!"));
+            document.getElementById('restart-plan-btn').addEventListener('click', () => showPlannerScreen('meal-plan-hub'));
+            
+            // Dynamic buttons in Progress page
             setTimeout(() => {
                 const logMealBtn = document.querySelector('#progress-overlay .progress-section:nth-of-type(2) .auth-button');
                 const logWorkoutBtn = document.querySelector('#progress-overlay .progress-section:nth-of-type(3) .auth-button');
-                
-                if (logMealBtn) {
-                    logMealBtn.addEventListener('click', handleLogMealFromProgress);
-                }
-                if (logWorkoutBtn) {
-                    logWorkoutBtn.addEventListener('click', handleLogWorkoutFromProgress);
-                }
+                if (logMealBtn) logMealBtn.addEventListener('click', handleLogMealFromProgress);
+                if (logWorkoutBtn) logWorkoutBtn.addEventListener('click', handleLogWorkoutFromProgress);
             }, 500);
         }
 
-        function switchTab(tab) {
+        // --- NAVIGATION & UI MANAGEMENT ---
+        async function switchTab(tab) {
             currentTab = tab;
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.toggle('active', item.dataset.tab === tab);
             });
-            
+
+            // Hide all overlays first
+            progressOverlay.classList.add('hidden');
+            plannerOverlay.classList.add('hidden');
+            appContainer.classList.add('hidden');
+
             if (tab === 'progress') {
-                showProgressPage();
+                await showProgressPage();
+            } else if (tab === 'planner') {
+                await showPlannerPage();
             } else {
-                hideProgressPage(false); // Hide progress but don't switch tab back
+                appContainer.classList.remove('hidden');
                 updateCardForTab(tab);
             }
         }
@@ -1298,163 +1702,14 @@
                 case 'coach':
                     showCard('Ready to Track', 'Hold the mic button and say "analyze this food" or "log this food"');
                     break;
-                case 'planner':
-                    showCard('Planner+', 'Coming soon - Meal planner, scheduler, and more to help you hit your goals.');
-                    break;
+                // Planner and Progress are now handled by showing their own full-page overlays.
             }
         }
-
-        async function showProgressPage() {
-            document.getElementById('progress-overlay').classList.remove('hidden');
-            document.getElementById('app-container').classList.add('hidden');
-            await loadProgressData();
-        }
-
-        function hideProgressPage(resetTab = true) {
-            document.getElementById('progress-overlay').classList.add('hidden');
-            document.getElementById('app-container').classList.remove('hidden');
-            if (resetTab) {
-                switchTab('coach');
-            }
-        }
-
-        async function loadProgressData() {
-            if (!currentUser) return;
-            
-            try {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                document.getElementById('progress-time').textContent = timeString;
-                
-                const summaryResponse = await fetch(`${API_BASE}/summary`, {
-                    headers: { 'X-Username': currentUser }
-                });
-                
-                if (summaryResponse.ok) {
-                    const summaryData = await summaryResponse.json();
-                    
-                    document.getElementById('progress-energy-balance').textContent = 
-                        `${summaryData.consumed_today} / ${summaryData.target_calories}`;
-                    
-                    const percentage = (summaryData.consumed_today / summaryData.target_calories) * 100;
-                    document.getElementById('progress-energy-fill').style.width = Math.min(percentage, 100) + '%';
-                    
-                    const currentHour = now.getHours();
-                    const typicalPercentage = Math.min((currentHour / 22) * 100, 100); // Assume day ends at 10pm
-                    document.querySelector('.typical-marker').style.left = typicalPercentage + '%';
-                }
-                
-                await updateMacroProgress();
-                await updateExerciseData();
-                
-            } catch (err) {
-                console.error('Failed to load progress data:', err);
-            }
-        }
-
-        async function updateMacroProgress() {
-            try {
-                const response = await fetch(`${API_BASE}/macro_summary`, {
-                    headers: { 'X-Username': currentUser }
-                });
-
-                if (!response.ok) {
-                    console.error('Failed to fetch macro summary');
-                    return;
-                }
-
-                const macros = await response.json();
-                const circumference = 2 * Math.PI * 20;
-
-                const updateMacroUI = (macroName, data) => {
-                    const circle = document.querySelector(`.macro-item:nth-child(${macroName === 'protein' ? 1 : macroName === 'carbs' ? 2 : 3}) .circular-progress-fill`);
-                    const text = document.querySelector(`.macro-item:nth-child(${macroName === 'protein' ? 1 : macroName === 'carbs' ? 2 : 3}) .circular-progress-text`);
-                    const values = document.querySelector(`.macro-item:nth-child(${macroName === 'protein' ? 1 : macroName === 'carbs' ? 2 : 3}) .macro-values`);
-                    const linear = document.querySelector(`.macro-item:nth-child(${macroName === 'protein' ? 1 : macroName === 'carbs' ? 2 : 3}) .linear-progress-fill`);
-
-                    if (circle) circle.style.strokeDasharray = `${(data.percentage / 100) * circumference} ${circumference}`;
-                    if (text) text.textContent = data.percentage + '%';
-                    if (values) values.textContent = `${data.current}g/${data.target}g`;
-                    if (linear) linear.style.width = data.percentage + '%';
-                };
-
-                updateMacroUI('protein', macros.protein);
-                updateMacroUI('carbs', macros.carbs);
-                updateMacroUI('fats', macros.fats);
-
-            } catch (err) {
-                console.error('Error updating macro progress:', err);
-            }
-        }
-
-        async function updateExerciseData() {
-            try {
-                const response = await fetch(`${API_BASE}/exercise_summary`, {
-                    headers: { 'X-Username': currentUser }
-                });
-
-                if (!response.ok) {
-                    console.error('Failed to fetch exercise summary');
-                    return;
-                }
-
-                const data = await response.json();
-                const exerciseList = document.querySelector('.exercise-list');
-                // This selector correctly targets the total calories element in the third progress section
-                const totalCaloriesElement = document.getElementById('total-calories-burned');
-                // This check prevents silent errors if the HTML structure changes
-                if (!exerciseList || !totalCaloriesElement) return;
-
-                // 2. Update the total calories burned at the top of the section
-                totalCaloriesElement.textContent = `⚡ ${data.total_calories} Cal`;
-
-                // 3. Populate the list with fetched exercise data
-                if (data.exercises.length === 0) {
-                    exerciseList.innerHTML = '<div style="color: rgba(255,255,255,0.6); font-size: 14px; text-align: center;">No workouts logged today.</div>';
-                } else {
-                    const exerciseItemsHTML = data.exercises.map(ex => `
-                        <div class="exercise-item">
-                            <div class="exercise-info">
-                                <div class="exercise-icon">${ex.icon}</div>
-                                <div class="exercise-details">
-                                    <h4>${ex.type}</h4>
-                                    <div class="exercise-meta">
-                                        <span>${ex.duration}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                                <div class="exercise-calories">-${ex.calories} Cal</div>
-                                ${ex.isPR ? '<div class="pr-badge">🏆 PR!</div>' : ''}
-                            </div>
-                        </div>
-                    `).join('');
-
-                    // Set the innerHTML just one time with the complete list
-                    exerciseList.innerHTML = exerciseItemsHTML;
-                }
-            } catch (err) {
-                console.error('Error updating exercise data:', err);
-            }
-        }
-
-        function handleLogMealFromProgress() {
-            hideProgressPage();
-            showCard('Ready to Log Food', 'Hold the mic button and say "log this food" while pointing at your meal');
-        }
-
-        function handleLogWorkoutFromProgress() {
-            hideProgressPage();
-            showCard('Ready to Log Workout', 'Hold the mic button and say "start my run" or "going for a workout"');
-        }
-
-        function showCard(title, content, isFood = false) {
+        
+        function showCard(title, content, isHTML = false) {
             cardTitle.innerHTML = title;
-            if (isFood) {
-                cardContent.innerHTML = content;
-            } else {
-                cardContent.textContent = content;
-            }
+            cardContent.innerHTML = isHTML ? content : '';
+            if (!isHTML) cardContent.textContent = content;
             infoCard.classList.add('visible');
         }
 
@@ -1478,11 +1733,7 @@
         async function initCamera() {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: 'environment',
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    },
+                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
                     audio: true 
                 });
                 video.srcObject = stream;
@@ -1491,351 +1742,241 @@
             }
         }
 
-        async function updateCalorieProgress() {
-            if (!currentUser) return;
-            
-            try {
-                const response = await fetch(`${API_BASE}/summary`, {
-                    headers: { 'X-Username': currentUser }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    calorieNumbers.textContent = `${data.consumed_today} / ${data.target_calories}`;
-                    
-                    const percentage = (data.consumed_today / data.target_calories) * 100;
-                    progressFill.style.width = Math.min(percentage, 100) + '%';
-                }
-            } catch (err) {
-                console.error('Failed to update calorie progress:', err);
-            }
-        }
-
-        async function startRecording() {
-            if (isRecording || !stream) return;
-            try {
-                audioChunks = [];
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.ondataavailable = (event) => audioChunks.push(event.data);
-                mediaRecorder.onstop = processVoiceCommand;
-                mediaRecorder.start();
-                isRecording = true;
-                voiceBtn.classList.add('listening');
-                showCard('Listening...', 'Speak your command now');
-            } catch (err) {
-                showCard('Microphone Error', err.message);
-            }
-        }
-
-        function stopRecording() {
-            if (!isRecording) return;
-            mediaRecorder.stop();
-            isRecording = false;
-            voiceBtn.classList.remove('listening');
-            showCard('Processing...', 'Analyzing your voice command');
-        }
-
-        async function processVoiceCommand() {
-            if (!currentUser) return;
-            try {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                const formData = new FormData();
-                formData.append('audio', audioBlob, 'voice_command.webm');
-
-                const response = await fetch(`${API_BASE}/voice_command`, {
-                    method: 'POST',
-                    headers: { 'X-Username': currentUser },
-                    body: formData
-                });
-
-                const result = await response.json();
-                
-                switch (result.action) {
-                    case 'log_food': await logFoodDirect(); break;
-                    case 'analyze_food': await analyzeFood(); break;
-                    case 'log_previous': await logPreviousItem(); break;
-                    case 'get_summary': await updateCalorieProgress(); break;
-                    case 'start_exercise': await startExercise(); break;
-                    case 'stop_exercise': await stopExercise(); break;
-                    default: 
-                        showCard('Not Understood', result.message || "I didn't understand that. Try saying 'analyze this food' or 'track my run'");
-                }
-            } catch (err) {
-                showCard('Processing Error', 'Voice processing failed. Please try again.');
-            }
-        }
-
-        async function logFoodDirect() {
-            try {
-                showCard('Analyzing & Logging...', 'Taking photo and analyzing food');
-                const photoBlob = await takePhoto();
-                
-                const formData = new FormData();
-                formData.append('image', photoBlob, 'food.jpg');
-                
-                const response = await fetch(`${API_BASE}/log_food_direct`, {
-                    method: 'POST',
-                    headers: { 'X-Username': currentUser },
-                    body: formData
-                });
-                
-                const result = await response.json();
-                showFoodResult(result, true);
-                await updateCalorieProgress();
-            } catch (err) {
-                showCard('Error', 'Failed to log food. Please try again.');
-            }
-        }
-
-        async function analyzeFood() {
-            try {
-                showCard('Analyzing...', 'Taking photo and analyzing food');
-                const photoBlob = await takePhoto();
-                
-                const formData = new FormData();
-                formData.append('image', photoBlob, 'food.jpg');
-                
-                const response = await fetch(`${API_BASE}/analyze_food`, {
-                    method: 'POST',
-                    headers: { 'X-Username': currentUser },
-                    body: formData
-                });
-                
-                const result = await response.json();
-                lastAnalysisResult = result;
-                showFoodResult(result, false);
-            } catch (err) {
-                showCard('Error', 'Failed to analyze food. Please try again.');
-            }
-        }
-
-        function showFoodResult(result, logged) {
-            const status = logged ? 'LOGGED' : 'IDENTIFIED';
-            const statusIcon = logged ? '✅' : '🔍';
-            const actionText = logged ? '' : 'Say "log it" to save this to your diary';
-            
-            const nutritionGrid = `
-                <div class="nutrition-grid">
-                    <div class="nutrition-item">
-                        <div class="nutrition-value">${result.calories}</div>
-                        <div class="nutrition-label">calories</div>
-                    </div>
-                    <div class="nutrition-item">
-                        <div class="nutrition-value">--g</div>
-                        <div class="nutrition-label">protein</div>
-                    </div>
-                    <div class="nutrition-item">
-                        <div class="nutrition-value">--g</div>
-                        <div class="nutrition-label">carbs</div>
-                    </div>
-                </div>
-                ${actionText ? `<div style="margin-top: 12px; color: #4ade80; font-size: 12px;">${actionText}</div>` : ''}
-            `;
-
-            showCard(`${statusIcon} ${status}: ${result.description.toUpperCase()}`, nutritionGrid, true);
-        }
-
-        async function logPreviousItem() {
-            if (!lastAnalysisResult) {
-                showCard('Nothing to Log', 'Please analyze a food item first');
-                return;
-            }
-            
-            try {
-                await fetch(`${API_BASE}/log_previous`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Username': currentUser
-                    },
-                    body: JSON.stringify({
-                        type: lastAnalysisResult.description.split(' ')[0],
-                        description: lastAnalysisResult.description,
-                        calories: lastAnalysisResult.calories
-                    })
-                });
-                
-                showFoodResult(lastAnalysisResult, true);
-                await updateCalorieProgress();
-                lastAnalysisResult = null;
-            } catch (err) {
-                showCard('Error', 'Failed to log item. Please try again.');
-            }
-        }
-
-        function takePhoto() {
-            return new Promise((resolve) => {
-                const context = canvas.getContext('2d');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                canvas.toBlob(resolve, 'image/jpeg', 0.8);
-            });
-        }
-
-        async function handleRegister() {
-            const username = document.getElementById('reg-username').value.toLowerCase().trim();
-            const age = document.getElementById('reg-age').value;
-            const sex = document.getElementById('reg-sex').value;
-            const height = document.getElementById('reg-height').value;
-            const weight = document.getElementById('reg-weight').value;
-            const goal = document.getElementById('reg-goal').value;
-
-            if (!username || !age || !sex || !height || !weight) {
-                alert('Please fill out all fields.');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/register`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ 
-                        username, age: parseInt(age), sex, 
-                        height_cm: parseInt(height), 
-                        weight_kg: parseInt(weight), goal 
-                    })
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    startApp(result.username);
-                } else {
-                    const err = await response.json();
-                    alert(`Registration failed: ${err.detail}`);
-                }
-            } catch (err) {
-                alert('Registration error occurred.');
-            }
-        }
-
-        async function handleLogin() {
-            const username = document.getElementById('login-username').value.toLowerCase().trim();
-            if (!username) {
-                alert('Please enter a username.');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE}/login`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ username })
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    startApp(result.username);
-                } else {
-                    alert('Login failed: User not found.');
-                }
-            } catch(err) {
-                alert('Login error occurred.');
-            }
-        }
-
-        function hideProfile() {
-            profileOverlay.classList.add('hidden');
-        }
-
-        function handleLogout() {
-            localStorage.removeItem('fitness-app-user');
-            currentUser = null;
-            lastAnalysisResult = null;
-            
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-            }
-            
-            profileOverlay.classList.add('hidden');
+        // --- PLANNER+ FUNCTIONALITY ---
+        function showPlannerPage() {
+            plannerOverlay.classList.remove('hidden');
             appContainer.classList.add('hidden');
-            authOverlay.classList.remove('hidden');
-            
-            document.getElementById('login-username').value = '';
-            document.getElementById('register-form').classList.remove('hidden');
-            document.getElementById('login-form').classList.add('hidden');
+            showPlannerScreen('planner-main');
         }
 
-        async function showProfile() {
+        function hidePlannerPage() {
+            plannerOverlay.classList.add('hidden');
+            switchTab('coach');
+        }
+
+        function showPlannerScreen(screenId) {
+            // Hide all direct children of the planner overlay
+            plannerOverlay.querySelectorAll('.auth-container > .planner-flow-step').forEach(step => step.classList.remove('active'));
+            const screenElement = document.getElementById(screenId);
+            if (screenElement) {
+                screenElement.classList.add('active');
+            }
+        }
+        
+        function showWizardScreen(wizardStepId) {
+            document.querySelectorAll('#meal-plan-wizard .planner-flow-step').forEach(step => step.classList.remove('active'));
+            const stepElement = document.getElementById(wizardStepId);
+            if (stepElement) {
+                stepElement.classList.add('active');
+            }
+        }
+        
+        function startMealPlanFlow() {
+            showPlannerScreen('meal-plan-wizard');
+            currentMealPlanStep = 0;
+            // Reset form fields for a new plan
+            document.getElementById('mindful-budget-input').value = '100';
+            document.getElementById('mindful-allergies-input').value = '';
+            updateMealPlanNavigation();
+        }
+
+        async function showMealPlanGallery() {
+            showPlannerScreen('meal-plan-gallery');
+            const container = document.getElementById('gallery-container');
+            container.innerHTML = `<p style="color: rgba(255,255,255,0.7); text-align: center;">Loading saved plans...</p>`;
+
+            try {
+                const response = await fetch(`${API_BASE}/get_all_meal_plans`, { headers: { 'X-Username': currentUser } });
+                const plans = await response.json();
+
+                if (plans.length === 0) {
+                    container.innerHTML = `<p style="color: rgba(255,255,255,0.7); text-align: center;">You haven't created any meal plans yet.</p>`;
+                    return;
+                }
+
+                container.innerHTML = plans.map(plan => {
+                    const planDate = new Date(plan.created_at).toLocaleDateString("en-US", { month: 'long', day: 'numeric' });
+                    const healthScore = plan.plan_data.health_analysis?.health_score || 'N/A';
+                    return `
+                        <div class="planner-feature-card" style="flex-direction: column; align-items: stretch; cursor: default;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                <h3 style="margin: 0; font-size: 16px;">Plan from ${planDate}</h3>
+                                <div class="feature-status">Score: ${healthScore}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                container.innerHTML = `<p style="color: #f87171; text-align: center;">Could not load saved plans. Please try again.</p>`;
+            }
+        }
+
+        async function nextMealPlanStep() {
+            if (MEAL_PLAN_WIZARD_STEPS[currentMealPlanStep] === 'dietary') {
+                await handleMindfulMealGeneration();
+                return;
+            }
+            if (currentMealPlanStep < MEAL_PLAN_WIZARD_STEPS.length - 1) {
+                currentMealPlanStep++;
+                updateMealPlanNavigation();
+            }
+        }
+        
+        function previousMealPlanStep() {
+            if (currentMealPlanStep > 0) {
+                currentMealPlanStep--;
+                updateMealPlanNavigation();
+            } else {
+                // If on the first step, go back to the hub
+                showPlannerScreen('meal-plan-hub');
+            }
+        }
+
+        function updateMealPlanNavigation() {
+            const currentStepName = MEAL_PLAN_WIZARD_STEPS[currentMealPlanStep];
+            showWizardScreen(`meal-plan-${currentStepName}`);
+            
+            const backBtn = document.getElementById('mindful-back-button');
+            const nextBtn = document.getElementById('mindful-next-button');
+
+            // Hide/show buttons based on step
+            backBtn.style.visibility = (currentStepName === 'reflection' || currentStepName === 'results') ? 'hidden' : 'visible';
+            nextBtn.style.visibility = (currentStepName === 'reflection' || currentStepName === 'results') ? 'hidden' : 'visible';
+        }
+
+        async function handleMindfulMealGeneration() {
+            const budget = document.getElementById('mindful-budget-input')?.value || 100;
+            const allergies = document.getElementById('mindful-allergies-input')?.value || '';
+            
+            currentMealPlanStep = MEAL_PLAN_WIZARD_STEPS.indexOf('reflection');
+            updateMealPlanNavigation();
+
+            try {
+                const response = await fetch(`${API_BASE}/create_meal_plan`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Username': currentUser },
+                    body: JSON.stringify({ budget: parseFloat(budget), allergies })
+                });
+                
+                if (!response.ok) throw new Error('Meal planning failed on the server.');
+                
+                const newPlanData = await response.json();
+                currentMealPlanStep = MEAL_PLAN_WIZARD_STEPS.indexOf('results');
+                updateMealPlanNavigation();
+                displayMindfulResults(newPlanData);
+
+            } catch (error) {
+                showPlannerErrorState();
+            }
+        }
+
+        function displayMindfulResults(planData) {
+            document.getElementById('mindful-health-score').textContent = planData.health_analysis?.health_score || '--';
+            const previewEl = document.getElementById('mindful-meal-preview');
+            const weekPlan = planData.meal_plan?.week_plan;
+            if (!previewEl || !weekPlan) return;
+
+            let html = Object.keys(weekPlan).slice(0, 3).map(day => `
+                <div class="preview-day">
+                    <h4>${day.replace('_', ' ').toUpperCase()}</h4>
+                    <div class="preview-meal">🌅 ${weekPlan[day].breakfast?.recipe || 'Breakfast'}</div>
+                    <div class="preview-meal">☀️ ${weekPlan[day].lunch?.recipe || 'Lunch'}</div>
+                    <div class="preview-meal">🌙 ${weekPlan[day].dinner?.recipe || 'Dinner'}</div>
+                </div>`).join('');
+            if (Object.keys(weekPlan).length > 3) {
+                html += `<div class="gentle-note">... and ${Object.keys(weekPlan).length - 3} more days planned.</div>`;
+            }
+            previewEl.innerHTML = html;
+        }
+
+        function showPlannerErrorState() {
+            currentMealPlanStep = MEAL_PLAN_WIZARD_STEPS.indexOf('results');
+            updateMealPlanNavigation();
+            document.getElementById('mindful-meal-preview').innerHTML = `<div class="gentle-note">We encountered a gentle pause in creating your plan. Please try again.</div>`;
+            document.getElementById('mindful-health-score').textContent = 'Error';
+        }
+
+        // --- PROGRESS PAGE ---
+        async function showProgressPage() {
+            progressOverlay.classList.remove('hidden');
+            appContainer.classList.add('hidden');
+            await loadProgressData();
+        }
+
+        function hideProgressPage() {
+            progressOverlay.classList.add('hidden');
+            switchTab('coach');
+        }
+
+        async function loadProgressData() {
             if (!currentUser) return;
-            
             try {
-                profileOverlay.classList.remove('hidden');
+                document.getElementById('progress-time').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 
-                const response = await fetch(`${API_BASE}/profile`, {
-                    headers: { 'X-Username': currentUser }
-                });
+                const summaryResponse = await fetch(`${API_BASE}/summary`, { headers: { 'X-Username': currentUser } });
+                if (summaryResponse.ok) {
+                    const data = await summaryResponse.json();
+                    document.getElementById('progress-energy-balance').textContent = `${data.consumed_today} / ${data.target_calories}`;
+                    document.getElementById('progress-energy-fill').style.width = `${Math.min((data.consumed_today / data.target_calories) * 100, 100)}%`;
+                    document.querySelector('.typical-marker').style.left = `${Math.min((new Date().getHours() / 22) * 100, 100)}%`;
+                }
                 
-                if (response.ok) {
-                    const profileData = await response.json();
-                    
-                    document.getElementById('profile-username').textContent = profileData.username;
-                    document.getElementById('profile-email').textContent = `${profileData.username}@app.dev`;
-                    document.getElementById('profile-age').textContent = profileData.age;
-                    document.getElementById('profile-sex').textContent = profileData.sex;
-                    document.getElementById('profile-height').textContent = `${profileData.height_cm} cm`;
-                    document.getElementById('profile-weight').textContent = `${profileData.weight_kg} kg`;
-                    document.getElementById('profile-goal').textContent = profileData.goal.replace('_', ' ');
-                    document.getElementById('avatar-initial').textContent = profileData.username.charAt(0).toUpperCase();
-                } else {
-                    document.getElementById('profile-username').textContent = currentUser;
-                    document.getElementById('avatar-initial').textContent = currentUser.charAt(0).toUpperCase();
-                }
+                await updateMacroProgress();
+                await updateExerciseData();
+                
             } catch (err) {
-                console.error('Profile fetch error:', err);
-                document.getElementById('profile-username').textContent = currentUser;
-                document.getElementById('avatar-initial').textContent = currentUser.charAt(0).toUpperCase();
+                console.error('Failed to load progress data:', err);
             }
         }
+        
+        async function updateMacroProgress() { /* ... function content remains the same ... */ }
+        async function updateExerciseData() { /* ... function content remains the same ... */ }
+        function handleLogMealFromProgress() { hideProgressPage(); showCard('Ready to Log Food', 'Hold the mic and say "log this food"'); }
+        function handleLogWorkoutFromProgress() { hideProgressPage(); showCard('Ready to Log Workout', 'Hold the mic and say "start my run"'); }
 
-        async function startExercise() {
-            if (currentExerciseSessionId) {
-                showCard('Workout in Progress', 'You are already in a workout session. Say "stop exercise" to end it.');
-                return;
-            }
-            try {
-                const response = await fetch(`${API_BASE}/exercise`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Username': currentUser
-                    },
-                    body: JSON.stringify({ action: 'start', exercise_type: 'running' }) // Defaulting to running for now
-                });
-                const result = await response.json();
-                if (result.session_id) {
-                    currentExerciseSessionId = result.session_id;
-                    showCard('🏃 Workout Started!', 'Your session has begun. Say "stop exercise" when you are finished.');
-                }
-            } catch (err) {
-                showCard('Error', 'Could not start workout.');
-            }
-        }
+        // --- CORE FUNCTIONALITY (Voice, Food, Exercise) ---
+        async function updateCalorieProgress() { /* ... function content remains the same ... */ }
+        async function startRecording() { /* ... function content remains the same ... */ }
+        function stopRecording() { /* ... function content remains the same ... */ }
+        async function processVoiceCommand() { /* ... function content remains the same ... */ }
+        async function logFoodDirect() { /* ... function content remains the same ... */ }
+        async function analyzeFood() { /* ... function content remains the same ... */ }
+        function showFoodResult(result, logged) { /* ... function content remains the same ... */ }
+        async function logPreviousItem() { /* ... function content remains the same ... */ }
+        function takePhoto() { /* ... function content remains the same ... */ }
+        async function startExercise() { /* ... function content remains the same ... */ }
+        async function stopExercise() { /* ... function content remains the same ... */ }
 
-        async function stopExercise() {
-            if (!currentExerciseSessionId) {
-                showCard('No Workout Active', 'You are not in an active workout session.');
-                return;
-            }
-            try {
-                const response = await fetch(`${API_BASE}/exercise`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Username': currentUser
-                    },
-                    body: JSON.stringify({ action: 'stop', session_id: currentExerciseSessionId })
-                });
-                const result = await response.json();
-                showCard('🏆 Workout Complete!', `Great job! You burned an estimated ${result.calories_burned} calories.`);
-                currentExerciseSessionId = null; // Reset for the next workout
-                await updateCalorieProgress(); // Refresh the UI
-            } catch (err) {
-                showCard('Error', 'Could not stop workout.');
-            }
-        }
+        // --- AUTH & PROFILE ---
+        async function handleRegister() { /* ... function content remains the same ... */ }
+        async function handleLogin() { /* ... function content remains the same ... */ }
+        function hideProfile() { profileOverlay.classList.add('hidden'); }
+        async function showProfile() { /* ... function content remains the same ... */ }
+        function handleLogout() { /* ... function content remains the same ... */ }
 
+        // Duplicated function content for brevity in this example. 
+        // In the final code, these functions would be fully implemented as they were in the original file.
+
+        async function updateCalorieProgress() {if (!currentUser) return;try {const response = await fetch(`${API_BASE}/summary`, {headers: { 'X-Username': currentUser }});if (response.ok) {const data = await response.json();calorieNumbers.textContent = `${data.consumed_today} / ${data.target_calories}`;const percentage = (data.consumed_today / data.target_calories) * 100;progressFill.style.width = Math.min(percentage, 100) + '%';}} catch (err) {console.error('Failed to update calorie progress:', err);}}
+        async function startRecording() {if (isRecording || !stream) return;try {audioChunks = [];mediaRecorder = new MediaRecorder(stream);mediaRecorder.ondataavailable = (event) => audioChunks.push(event.data);mediaRecorder.onstop = processVoiceCommand;mediaRecorder.start();isRecording = true;voiceBtn.classList.add('listening');showCard('Listening...', 'Speak your command now');} catch (err) {showCard('Microphone Error', err.message);}}
+        function stopRecording() {if (!isRecording) return;mediaRecorder.stop();isRecording = false;voiceBtn.classList.remove('listening');showCard('Processing...', 'Analyzing your voice command');}
+        async function processVoiceCommand() {if (!currentUser) return;try {const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });const formData = new FormData();formData.append('audio', audioBlob, 'voice_command.webm');const response = await fetch(`${API_BASE}/voice_command`, {method: 'POST',headers: { 'X-Username': currentUser },body: formData});const result = await response.json();switch (result.action) {case 'log_food': await logFoodDirect(); break;case 'analyze_food': await analyzeFood(); break;case 'log_previous': await logPreviousItem(); break;case 'get_summary': await updateCalorieProgress(); break;case 'start_exercise': await startExercise(); break;case 'stop_exercise': await stopExercise(); break;default:showCard('Not Understood', result.message || "I didn't understand that. Try saying 'analyze this food' or 'track my run'");}} catch (err) {showCard('Processing Error', 'Voice processing failed. Please try again.');}}
+        async function logFoodDirect() {try {showCard('Analyzing & Logging...', 'Taking photo and analyzing food');const photoBlob = await takePhoto();const formData = new FormData();formData.append('image', photoBlob, 'food.jpg');const response = await fetch(`${API_BASE}/log_food_direct`, {method: 'POST',headers: { 'X-Username': currentUser },body: formData});const result = await response.json();showFoodResult(result, true);await updateCalorieProgress();} catch (err) {showCard('Error', 'Failed to log food. Please try again.');}}
+        async function analyzeFood() {try {showCard('Analyzing...', 'Taking photo and analyzing food');const photoBlob = await takePhoto();const formData = new FormData();formData.append('image', photoBlob, 'food.jpg');const response = await fetch(`${API_BASE}/analyze_food`, {method: 'POST',headers: { 'X-Username': currentUser },body: formData});const result = await response.json();lastAnalysisResult = result;showFoodResult(result, false);} catch (err) {showCard('Error', 'Failed to analyze food. Please try again.');}}
+        function showFoodResult(result, logged) {const status = logged ? 'LOGGED' : 'IDENTIFIED';const statusIcon = logged ? '✅' : '🔍';const actionText = logged ? '' : 'Say "log it" to save this to your diary';const nutritionGrid = `<div class="nutrition-grid"><div class="nutrition-item"><div class="nutrition-value">${result.calories}</div><div class="nutrition-label">calories</div></div><div class="nutrition-item"><div class="nutrition-value">--g</div><div class="nutrition-label">protein</div></div><div class="nutrition-item"><div class="nutrition-value">--g</div><div class="nutrition-label">carbs</div></div></div>${actionText ? `<div style="margin-top: 12px; color: #4ade80; font-size: 12px;">${actionText}</div>` : ''}`;showCard(`${statusIcon} ${status}: ${result.description.toUpperCase()}`, nutritionGrid, true);}
+        async function logPreviousItem() {if (!lastAnalysisResult) {showCard('Nothing to Log', 'Please analyze a food item first');return;}try {await fetch(`${API_BASE}/log_previous`, {method: 'POST',headers: {'Content-Type': 'application/json','X-Username': currentUser},body: JSON.stringify({type: lastAnalysisResult.description.split(' ')[0],description: lastAnalysisResult.description,calories: lastAnalysisResult.calories})});showFoodResult(lastAnalysisResult, true);await updateCalorieProgress();lastAnalysisResult = null;} catch (err) {showCard('Error', 'Failed to log item. Please try again.');}}
+        function takePhoto() {return new Promise((resolve) => {const context = canvas.getContext('2d');canvas.width = video.videoWidth;canvas.height = video.videoHeight;context.drawImage(video, 0, 0, canvas.width, canvas.height);canvas.toBlob(resolve, 'image/jpeg', 0.8);});}
+        async function handleRegister() {const username = document.getElementById('reg-username').value.toLowerCase().trim();const age = document.getElementById('reg-age').value;const sex = document.getElementById('reg-sex').value;const height = document.getElementById('reg-height').value;const weight = document.getElementById('reg-weight').value;const goal = document.getElementById('reg-goal').value;if (!username || !age || !sex || !height || !weight) {alert('Please fill out all fields.');return;}try {const response = await fetch(`${API_BASE}/register`, {method: 'POST',headers: {'Content-Type': 'application/json'},body: JSON.stringify({ username, age: parseInt(age), sex, height_cm: parseInt(height), weight_kg: parseInt(weight), goal })});if (response.ok) {const result = await response.json();startApp(result.username);} else {const err = await response.json();alert(`Registration failed: ${err.detail}`);}} catch (err) {alert('Registration error occurred.');}}
+        async function handleLogin() {const username = document.getElementById('login-username').value.toLowerCase().trim();if (!username) {alert('Please enter a username.');return;}try {const response = await fetch(`${API_BASE}/login`, {method: 'POST',headers: {'Content-Type': 'application/json'},body: JSON.stringify({ username })});if (response.ok) {const result = await response.json();startApp(result.username);} else {alert('Login failed: User not found.');}} catch(err) {alert('Login error occurred.');}}
+        function handleLogout() {localStorage.removeItem('fitness-app-user');currentUser = null;lastAnalysisResult = null;if (stream) {stream.getTracks().forEach(track => track.stop());stream = null;}profileOverlay.classList.add('hidden');appContainer.classList.add('hidden');authOverlay.classList.remove('hidden');document.getElementById('login-username').value = '';document.getElementById('register-form').classList.remove('hidden');document.getElementById('login-form').classList.add('hidden');}
+        async function showProfile() {if (!currentUser) return;try {profileOverlay.classList.remove('hidden');const response = await fetch(`${API_BASE}/profile`, {headers: { 'X-Username': currentUser }});if (response.ok) {const profileData = await response.json();document.getElementById('profile-username').textContent = profileData.username;document.getElementById('profile-email').textContent = `${profileData.username}@app.dev`;document.getElementById('profile-age').textContent = profileData.age;document.getElementById('profile-sex').textContent = profileData.sex;document.getElementById('profile-height').textContent = `${profileData.height_cm} cm`;document.getElementById('profile-weight').textContent = `${profileData.weight_kg} kg`;document.getElementById('profile-goal').textContent = profileData.goal.replace('_', ' ');document.getElementById('avatar-initial').textContent = profileData.username.charAt(0).toUpperCase();} else {document.getElementById('profile-username').textContent = currentUser;document.getElementById('avatar-initial').textContent = currentUser.charAt(0).toUpperCase();}} catch (err) {console.error('Profile fetch error:', err);document.getElementById('profile-username').textContent = currentUser;document.getElementById('avatar-initial').textContent = currentUser.charAt(0).toUpperCase();}}
+        async function startExercise() {if (currentExerciseSessionId) {showCard('Workout in Progress', 'You are already in a workout session. Say "stop exercise" to end it.');return;}try {const response = await fetch(`${API_BASE}/exercise`, {method: 'POST',headers: {'Content-Type': 'application/json','X-Username': currentUser},body: JSON.stringify({ action: 'start', exercise_type: 'running' }) });const result = await response.json();if (result.session_id) {currentExerciseSessionId = result.session_id;showCard('🏃 Workout Started!', 'Your session has begun. Say "stop exercise" when you are finished.');}} catch (err) {showCard('Error', 'Could not start workout.');}}
+        async function stopExercise() {if (!currentExerciseSessionId) {showCard('No Workout Active', 'You are not in an active workout session.');return;}try {const response = await fetch(`${API_BASE}/exercise`, {method: 'POST',headers: {'Content-Type': 'application/json','X-Username': currentUser},body: JSON.stringify({ action: 'stop', session_id: currentExerciseSessionId })});const result = await response.json();showCard('🏆 Workout Complete!', `Great job! You burned an estimated ${result.calories_burned} calories.`);currentExerciseSessionId = null; await updateCalorieProgress();} catch (err) {showCard('Error', 'Could not stop workout.');}}
+        async function updateMacroProgress() {try {const response = await fetch(`${API_BASE}/macro_summary`, {headers: { 'X-Username': currentUser }});if (!response.ok) {console.error('Failed to fetch macro summary');return;}const macros = await response.json();const circumference = 2 * Math.PI * 20;const updateMacroUI = (macroName, data) => {const elPrefix = `.macro-item:nth-child(${macroName === 'protein' ? 1 : macroName === 'carbs' ? 2 : 3})`;const circle = document.querySelector(`${elPrefix} .circular-progress-fill`);const text = document.querySelector(`${elPrefix} .circular-progress-text`);const values = document.querySelector(`${elPrefix} .macro-values`);const linear = document.querySelector(`${elPrefix} .linear-progress-fill`);if (circle) circle.style.strokeDasharray = `${(data.percentage / 100) * circumference} ${circumference}`;if (text) text.textContent = data.percentage + '%';if (values) values.textContent = `${data.current}g/${data.target}g`;if (linear) linear.style.width = data.percentage + '%';};updateMacroUI('protein', macros.protein);updateMacroUI('carbs', macros.carbs);updateMacroUI('fats', macros.fats);} catch (err) {console.error('Error updating macro progress:', err);}}
+        async function updateExerciseData() {try {const response = await fetch(`${API_BASE}/exercise_summary`, {headers: { 'X-Username': currentUser }});if (!response.ok) {console.error('Failed to fetch exercise summary');return;}const data = await response.json();const exerciseList = document.querySelector('.exercise-list');const totalCaloriesElement = document.getElementById('total-calories-burned');if (!exerciseList || !totalCaloriesElement) return;totalCaloriesElement.textContent = `⚡ ${data.total_calories} Cal`;if (data.exercises.length === 0) {exerciseList.innerHTML = '<div style="color: rgba(255,255,255,0.6); font-size: 14px; text-align: center;">No workouts logged today.</div>';} else {exerciseList.innerHTML = data.exercises.map(ex => `<div class="exercise-item"><div class="exercise-info"><div class="exercise-icon">${ex.icon}</div><div class="exercise-details"><h4>${ex.type}</h4><div class="exercise-meta"><span>${ex.duration}</span></div></div></div><div style="display: flex; flex-direction: column; align-items: flex-end;"><div class="exercise-calories">-${ex.calories} Cal</div>${ex.isPR ? '<div class="pr-badge">🏆 PR!</div>' : ''}</div></div>`).join('');}} catch (err) {console.error('Error updating exercise data:', err);}}
+
+
+        // --- START THE APP ---
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>

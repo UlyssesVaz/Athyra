@@ -4,6 +4,7 @@ from typing import Optional, Literal
 import sqlite3
 from openai import OpenAI
 import base64
+import asyncio
 from datetime import datetime, timedelta
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -81,6 +82,18 @@ def init_db():
         )
     """)
 
+    # Add a new table for meal plans
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS meal_plans (
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER,
+            created_at TEXT,
+            plan_data TEXT,
+            is_active INTEGER,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -107,6 +120,256 @@ class ExerciseRequest(BaseModel):
     session_id: int | None = None # session_id is only needed for the 'stop' action
     exercise_type: str = 'running' # Add this with a default value for now
 
+
+# =============================================================================
+# Agent Classes for Meal Planning Pipeline
+# =============================================================================
+
+class MealPlanAgent:
+    """Agent 1: Generates weekly meal plan based on user data"""
+    
+    def __init__(self, openai_client):
+        self.client = openai_client
+    
+    async def generate_plan(self, user_data):
+        """Generate meal plan from user preferences and history"""
+        
+        # Prepare context from user's food history
+        food_context = self._build_food_context(user_data.get('food_history', []))
+        
+        prompt = f"""
+        Create a 7-day meal plan for a user with these preferences:
+        - Goal: {user_data.get('goal', 'maintain')}
+        - Budget: ${user_data.get('budget', 100)}/week
+        - Allergies: {user_data.get('allergies', 'none')}
+        - Food History: {food_context}
+        - Target Calories: {user_data.get('target_calories', 2000)}/day
+        
+        Return JSON format:
+        {{
+            "week_plan": {{
+                "day_1": {{
+                    "breakfast": {{"recipe": "...", "calories": 0, "prep_time": "..."}},
+                    "lunch": {{"recipe": "...", "calories": 0, "prep_time": "..."}},
+                    "dinner": {{"recipe": "...", "calories": 0, "prep_time": "..."}}
+                }},
+                // ... repeat for 7 days
+            }},
+            "total_weekly_calories": 0,
+            "reasoning": "Why these meals fit the user's profile"
+        }}
+        """
+        
+        response = await self._call_openai(prompt)
+        return json.loads(response)
+    
+    def _build_food_context(self, food_history):
+        """Summarize user's eating patterns"""
+        if not food_history:
+            return "No previous food history"
+        
+        recent_foods = food_history[-10:]  # Last 10 entries
+        return f"Recent foods: {', '.join([food['description'] for food in recent_foods])}"
+    
+    async def _call_openai(self, prompt: str) -> str:
+        """Helper method for OpenAI API calls"""
+        response = await asyncio.to_thread(
+            self.client.chat.completions.create,
+            model="o4-mini",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"}
+        )
+        return response.choices[0].message.content
+
+class ShoppingListAgent:
+    """Agent 2: Converts meal plan to consolidated grocery list"""
+    
+    def __init__(self, openai_client):
+        self.client = openai_client
+    
+    async def compile_list(self, meal_plan):
+        """Convert meal plan to grocery list with quantities"""
+        
+        prompt = f"""
+        Convert this meal plan to a consolidated grocery list:
+        {json.dumps(meal_plan['week_plan'])}
+        
+        Consolidate ingredients (e.g., if multiple recipes need eggs, calculate total needed).
+        Estimate realistic quantities for grocery shopping.
+        
+        Return JSON format:
+        {{
+            "grocery_list": [
+                {{"item": "chicken breast", "quantity": "2 lbs", "category": "meat"}},
+                {{"item": "rice", "quantity": "5 lbs", "category": "grains"}},
+                // ...
+            ],
+            "estimated_cost": 0,
+            "shopping_categories": ["produce", "meat", "dairy", "pantry"]
+        }}
+        """
+        
+        response = await self._call_openai(prompt)
+        return json.loads(response)
+    
+    async def _call_openai(self, prompt: str) -> str:
+        response = await asyncio.to_thread(
+            self.client.chat.completions.create,
+            model="o4-mini",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"}
+        )
+        return response.choices[0].message.content
+
+class HealthValidatorAgent:
+    """Agent 3: Validates nutritional completeness and safety"""
+    
+    def __init__(self, openai_client):
+        self.client = openai_client
+    
+    async def validate_plan(self, meal_plan, shopping_list, user_data):
+        """Analyze nutritional completeness and flag potential issues"""
+        
+        prompt = f"""
+        Analyze this meal plan for nutritional completeness:
+        Meal Plan: {json.dumps(meal_plan)}
+        Shopping List: {json.dumps(shopping_list)}
+        User Info: Goal={user_data.get('goal')}, Allergies={user_data.get('allergies')}
+        
+        Check for:
+        1. Macro balance (protein/carbs/fats)
+        2. Micronutrient coverage
+        3. Allergy conflicts
+        4. Calorie appropriateness
+        
+        Return JSON format:
+        {{
+            "health_score": 0-100,
+            "nutritional_analysis": {{
+                "protein_adequacy": "adequate|low|high",
+                "micronutrient_gaps": ["vitamin_d", "iron"],
+                "macro_distribution": {{"protein": "25%", "carbs": "45%", "fats": "30%"}}
+            }},
+            "warnings": ["Potential allergy risk with...", "Low in vitamin B12"],
+            "improvements": ["Add more leafy greens", "Include fish twice per week"],
+            "approval_status": "approved|needs_revision"
+        }}
+        """
+        
+        response = await self._call_openai(prompt)
+        return json.loads(response)
+    
+    async def _call_openai(self, prompt: str) -> str:
+        response = await asyncio.to_thread(
+            self.client.chat.completions.create,
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"}
+        )
+        return response.choices[0].message.content
+
+class BudgetOptimizerAgent:
+    """Agent 4: Optimizes shopping list within budget constraints"""
+    
+    def __init__(self, openai_client):
+        self.client = openai_client
+    
+    async def optimize_budget(self, shopping_list, health_analysis, budget):
+        """Optimize shopping list for budget while maintaining nutrition"""
+        
+        prompt = f"""
+        Optimize this shopping list within budget ${budget}:
+        Shopping List: {json.dumps(shopping_list)}
+        Health Analysis: {json.dumps(health_analysis)}
+        
+        Priority rules:
+        1. Don't compromise on allergy safety
+        2. Maintain protein adequacy
+        3. Suggest cheaper alternatives for expensive items
+        4. Remove/reduce non-essential items if over budget
+        
+        Return JSON format:
+        {{
+            "optimized_list": [
+                {{"item": "chicken thighs", "quantity": "2 lbs", "price": 8.99, "substituted_from": "chicken breast"}},
+                // ...
+            ],
+            "total_cost": 0,
+            "savings": 0,
+            "substitutions_made": [
+                {{"original": "chicken breast", "replacement": "chicken thighs", "reason": "50% cost savings, similar protein"}}
+            ],
+            "removed_items": ["expensive_spice"],
+            "budget_status": "under|over|exact"
+        }}
+        """
+        
+        response = await self._call_openai(prompt)
+        return json.loads(response)
+    
+    async def _call_openai(self, prompt: str) -> str:
+        response = await asyncio.to_thread(
+            self.client.chat.completions.create,
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"}
+        )
+        return response.choices[0].message.content
+
+class MealPlanOrchestrator:
+    """Coordinates all agents and manages the pipeline"""
+    
+    def __init__(self, openai_client):
+        self.meal_agent = MealPlanAgent(openai_client)
+        self.shopping_agent = ShoppingListAgent(openai_client)
+        self.health_agent = HealthValidatorAgent(openai_client)
+        self.budget_agent = BudgetOptimizerAgent(openai_client)
+    
+    async def create_meal_plan(self, user_data):
+        """Execute full meal planning pipeline"""
+        
+        start_time = datetime.now()
+        pipeline_results = {}
+        
+        try:
+            # Agent 1: Generate meal plan
+            print("Agent 1: Generating meal plan...")
+            meal_plan = await self.meal_agent.generate_plan(user_data)
+            pipeline_results['meal_plan'] = meal_plan
+            
+            # Agent 2: Create shopping list
+            print("Agent 2: Creating shopping list...")
+            shopping_list = await self.shopping_agent.compile_list(meal_plan)
+            pipeline_results['shopping_list'] = shopping_list
+            
+            # Agent 3: Health validation
+            print("Agent 3: Validating health...")
+            health_analysis = await self.health_agent.validate_plan(meal_plan, shopping_list, user_data)
+            pipeline_results['health_analysis'] = health_analysis
+            
+            # Agent 4: Budget optimization
+            print("Agent 4: Optimizing budget...")
+            budget_optimization = await self.budget_agent.optimize_budget(
+                shopping_list, health_analysis, user_data.get('budget', 100)
+            )
+            pipeline_results['budget_optimization'] = budget_optimization
+            
+            # Calculate execution metrics
+            execution_time = (datetime.now() - start_time).total_seconds()
+            pipeline_results['execution_metrics'] = {
+                'total_time_seconds': execution_time,
+                'agent_calls': 4,
+                'estimated_cost': execution_time * 0.002  # Rough cost estimate
+            }
+            
+            return pipeline_results
+            
+        except Exception as e:
+            return {
+                'error': str(e),
+                'partial_results': pipeline_results,
+                'execution_time': (datetime.now() - start_time).total_seconds()
+            }
 
 # =============================================================================
 # VOICE COMMAND ROUTER v2 - NLP Intent Recognition
@@ -468,34 +731,28 @@ async def daily_summary(x_username: str = Header(...)):
         "goal": user["goal"]
     }
 
+# app.py
+
 @app.get("/macro_summary")
 async def get_macro_summary(x_username: str = Header(...)):
-    """Get macro nutrient breakdown from food logs."""
+    """Get macro nutrient breakdown from saved food log data."""
     conn = sqlite3.connect("fitness.db")
     try:
         user = get_user_by_username(x_username, conn)
-        
-        # Get today's food logs
         today = datetime.now().date().isoformat()
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT description, calories FROM user_logs WHERE user_id = ? AND DATE(timestamp) = ?", 
-            (user["id"], today)
-        )
+
+        # Fetch the SUM of macros directly from the database
+        cursor.execute("""
+            SELECT SUM(protein), SUM(carbs), SUM(fats) 
+            FROM user_logs 
+            WHERE user_id = ? AND DATE(timestamp) = ?
+        """, (user["id"], today))
         
-        food_logs = cursor.fetchall()
-        
-        # Calculate macros using AI estimation
-        total_protein = 0
-        total_carbs = 0
-        total_fats = 0
-        
-        for description, calories in food_logs:
-            # Use AI to estimate macros from food description
-            macros = estimate_macros_from_food(description, calories)
-            total_protein += macros["protein"]
-            total_carbs += macros["carbs"]
-            total_fats += macros["fats"]
+        totals = cursor.fetchone()
+        total_protein = totals[0] or 0
+        total_carbs = totals[1] or 0
+        total_fats = totals[2] or 0
         
         # Calculate targets based on user's calorie goal
         target_calories = calculate_target_calories(
@@ -505,31 +762,36 @@ async def get_macro_summary(x_username: str = Header(...)):
         )
         
         # Standard macro ratios: 30% protein, 40% carbs, 30% fats
-        target_protein = (target_calories * 0.30) / 4  # 4 calories per gram protein
-        target_carbs = (target_calories * 0.40) / 4    # 4 calories per gram carbs
-        target_fats = (target_calories * 0.30) / 9     # 9 calories per gram fat
+        target_protein = (target_calories * 0.30) / 4
+        target_carbs = (target_calories * 0.40) / 4
+        target_fats = (target_calories * 0.30) / 9
         
+        # Prevent division by zero if targets are 0
+        protein_perc = (total_protein / target_protein * 100) if target_protein > 0 else 0
+        carbs_perc = (total_carbs / target_carbs * 100) if target_carbs > 0 else 0
+        fats_perc = (total_fats / target_fats * 100) if target_fats > 0 else 0
+
         return {
             "protein": {
                 "current": round(total_protein),
                 "target": round(target_protein),
-                "percentage": min(round((total_protein / target_protein) * 100), 100)
+                "percentage": min(round(protein_perc), 100)
             },
             "carbs": {
                 "current": round(total_carbs),
                 "target": round(target_carbs),
-                "percentage": min(round((total_carbs / target_carbs) * 100), 100)
+                "percentage": min(round(carbs_perc), 100)
             },
             "fats": {
                 "current": round(total_fats),
                 "target": round(target_fats),
-                "percentage": min(round((total_fats / target_fats) * 100), 100)
+                "percentage": min(round(fats_perc), 100)
             }
         }
         
     finally:
         conn.close()
-
+        
 def estimate_macros_from_food(description: str, calories: int):
     """
     Use AI to estimate macro breakdown from food description.
@@ -824,6 +1086,121 @@ async def get_profile(x_username: str = Header(...)):
             "weight_kg": user["weight_kg"],
             "goal": user["goal"]
         }
+    finally:
+        conn.close()
+
+# =============================================================================
+# API Endpoints
+# =============================================================================
+
+@app.post("/create_meal_plan")
+async def create_meal_plan(
+    req: dict, # Updated to receive a dict
+    x_username: str = Header(...)
+):
+    """Generate and SAVE a complete meal plan using the multi-agent system."""
+    
+    conn = sqlite3.connect("fitness.db")
+    try:
+        user = get_user_by_username(x_username, conn)
+        budget = req.get('budget', 100)
+        allergies = req.get('allergies', "")
+
+        # ... (The existing logic to get food_history, target_calories, etc. remains the same)
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT description, calories, timestamp FROM user_logs WHERE user_id = ? ORDER BY timestamp DESC LIMIT 20",
+            (user["id"],)
+        )
+        food_history = [{"description": row[0], "calories": row[1], "timestamp": row[2]} for row in cursor.fetchall()]
+        target_calories = calculate_target_calories(sex=user["sex"], age=user["age"], height_cm=user["height_cm"], weight_kg=user["weight_kg"], goal=user["goal"])
+        
+        user_data = {
+            'goal': user['goal'],
+            'budget': budget,
+            'allergies': allergies.split(',') if allergies else [],
+            'target_calories': target_calories,
+            'food_history': food_history
+        }
+        
+        orchestrator = MealPlanOrchestrator(client)
+        results = await orchestrator.create_meal_plan(user_data)
+        
+        # --- NEW LOGIC TO SAVE THE PLAN ---
+        if 'error' not in results:
+            # 1. Deactivate any old plans for this user
+            cursor.execute("UPDATE meal_plans SET is_active = 0 WHERE user_id = ?", (user["id"],))
+            
+            # 2. Insert the new plan as a JSON string
+            cursor.execute("""
+                INSERT INTO meal_plans (user_id, created_at, plan_data, is_active)
+                VALUES (?, ?, ?, ?)
+            """, (user["id"], datetime.now().isoformat(), json.dumps(results), 1))
+            
+            conn.commit()        
+        return results
+        
+    finally:
+        conn.close()
+
+@app.get("/meal_plan_status")
+async def get_meal_plan_status(x_username: str = Header(...)):
+    """Get current meal plan status (placeholder for future persistence)"""
+    return {
+        "status": "no_active_plan",
+        "last_generated": None,
+        "plan_id": None
+    }
+
+@app.get("/get_active_meal_plan")
+async def get_active_meal_plan(x_username: str = Header(...)):
+    """Fetches the current active meal plan for a user from the database."""
+    conn = sqlite3.connect("fitness.db")
+    try:
+        user = get_user_by_username(x_username, conn)
+        cursor = conn.cursor()
+        
+        cursor.execute(
+            "SELECT plan_data FROM meal_plans WHERE user_id = ? AND is_active = 1 ORDER BY created_at DESC LIMIT 1",
+            (user["id"],)
+        )
+        active_plan = cursor.fetchone()
+        
+        if active_plan:
+            # The data is stored as a string, so we parse it back into JSON
+            return json.loads(active_plan[0])
+        else:
+            # No active plan found
+            raise HTTPException(status_code=404, detail="No active meal plan found.")
+            
+    finally:
+        conn.close()
+
+@app.get("/get_all_meal_plans")
+async def get_all_meal_plans(x_username: str = Header(...)):
+    """Fetches all meal plans a user has ever created."""
+    conn = sqlite3.connect("fitness.db")
+    try:
+        user = get_user_by_username(x_username, conn)
+        cursor = conn.cursor()
+        
+        # Select the id, creation date, and plan data for all plans, newest first.
+        cursor.execute(
+            "SELECT id, created_at, plan_data FROM meal_plans WHERE user_id = ? ORDER BY created_at DESC",
+            (user["id"],)
+        )
+        all_plans = cursor.fetchall()
+        
+        # Return a list of plans
+        return [{
+            "plan_id": row[0],
+            "created_at": row[1],
+            "plan_data": json.loads(row[2]) # Parse the JSON data before sending
+        } for row in all_plans]
+            
+    except Exception as e:
+        print(f"Error fetching all meal plans: {e}")
+        return [] # Return an empty list on error
     finally:
         conn.close()
 
